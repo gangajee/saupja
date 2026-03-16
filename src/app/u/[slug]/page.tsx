@@ -21,24 +21,24 @@ export default async function SharePage({ params }: { params: Promise<{ slug: st
 
   if (!business) notFound();
 
-  const imageFiles = business.files.filter((f) =>
-    /\.(jpg|jpeg|png|gif|webp)$/i.test(f.fileName)
-  );
-  const otherFiles = business.files.filter(
-    (f) => !/\.(jpg|jpeg|png|gif|webp)$/i.test(f.fileName)
-  );
+  const imageFiles = business.files.filter((f) => /\.(jpg|jpeg|png|gif|webp)$/i.test(f.fileName));
+  const otherFiles = business.files.filter((f) => !/\.(jpg|jpeg|png|gif|webp)$/i.test(f.fileName));
 
   return (
-    <div className="min-h-screen bg-gray-50 py-6 px-4 pb-10">
-      <div className="max-w-lg mx-auto space-y-4">
-        {/* 기본 정보 */}
-        <div className="bg-white rounded-2xl border shadow-sm p-6">
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold">{business.companyName}</h1>
-            <p className="text-gray-500 text-sm mt-1">사업자 정보</p>
-          </div>
+    <div className="min-h-screen bg-slate-50">
+      {/* 상단 브랜드 바 */}
+      <div className="bg-white border-b border-slate-100 px-5 py-3 text-center">
+        <span className="text-xs text-slate-300 tracking-wide">saupja.com</span>
+      </div>
 
-          <div className="space-y-3">
+      <div className="max-w-lg mx-auto px-4 py-8 pb-16 space-y-4">
+        {/* 기본 정보 카드 */}
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+          <div className="px-6 pt-6 pb-4 border-b border-slate-50">
+            <p className="text-xs font-medium text-slate-400 uppercase tracking-wide mb-1">사업자 정보</p>
+            <h1 className="text-xl font-bold text-slate-900">{business.companyName}</h1>
+          </div>
+          <div className="px-6 py-4 space-y-3">
             <InfoRow label="대표자" value={business.ownerName} />
             <InfoRow
               label="사업자번호"
@@ -61,26 +61,31 @@ export default async function SharePage({ params }: { params: Promise<{ slug: st
         {business.files.length > 0 && (
           <a
             href={`/api/download-all?slug=${business.slug}`}
-            className="flex items-center justify-center gap-2 w-full bg-blue-600 text-white py-3.5 rounded-2xl text-base font-medium active:bg-blue-700 transition"
+            className="flex items-center justify-center gap-2 w-full bg-slate-900 text-white py-3.5 rounded-2xl text-sm font-semibold hover:bg-slate-700 active:bg-slate-800 transition"
           >
-            전체 파일 ZIP 다운로드 ({business.files.length}개)
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            전체 파일 다운로드 ({business.files.length}개)
           </a>
         )}
 
         {/* 이미지 파일 */}
         {imageFiles.length > 0 && (
-          <div className="bg-white rounded-2xl border shadow-sm p-6">
-            <h2 className="text-sm font-medium text-gray-500 mb-4">첨부 이미지</h2>
-            <div className="space-y-4">
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div className="px-6 pt-5 pb-3 border-b border-slate-50">
+              <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">첨부 이미지</p>
+            </div>
+            <div className="px-6 py-4 space-y-5">
               {imageFiles.map((file) => (
-                <div key={file.id} className="space-y-2">
-                  <p className="text-sm font-medium">{file.label}</p>
+                <div key={file.id}>
+                  <p className="text-sm font-medium text-slate-700 mb-2">{file.label}</p>
                   <ImagePreview src={file.url} alt={file.label} fileName={file.fileName} />
-                  <div className="flex items-center justify-between">
-                    <p className="text-xs text-gray-400">{formatFileSize(file.fileSize)}</p>
+                  <div className="flex items-center justify-between mt-2">
+                    <p className="text-xs text-slate-300">{formatFileSize(file.fileSize)}</p>
                     <a
                       href={`/api/download?url=${encodeURIComponent(file.url)}&name=${encodeURIComponent(file.fileName)}`}
-                      className="text-xs text-blue-600 hover:underline"
+                      className="text-xs text-blue-500 font-medium hover:underline"
                     >
                       다운로드
                     </a>
@@ -93,23 +98,25 @@ export default async function SharePage({ params }: { params: Promise<{ slug: st
 
         {/* PDF 및 기타 파일 */}
         {otherFiles.length > 0 && (
-          <div className="bg-white rounded-2xl border shadow-sm p-6">
-            <h2 className="text-sm font-medium text-gray-500 mb-3">첨부 서류</h2>
-            <div className="space-y-2">
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div className="px-6 pt-5 pb-3 border-b border-slate-50">
+              <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">첨부 서류</p>
+            </div>
+            <div className="px-4 py-3 space-y-1">
               {otherFiles.map((file) => (
-                <div key={file.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                <div key={file.id} className="flex items-center justify-between px-2 py-3 rounded-xl hover:bg-slate-50 transition">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-red-100 rounded flex items-center justify-center text-xs font-bold text-red-500 uppercase">
+                    <div className="w-9 h-9 bg-red-50 rounded-xl flex items-center justify-center text-xs font-bold text-red-400 uppercase">
                       {file.fileName.split(".").pop()}
                     </div>
                     <div>
-                      <p className="text-sm font-medium">{file.label}</p>
-                      <p className="text-xs text-gray-400">{file.fileName} · {formatFileSize(file.fileSize)}</p>
+                      <p className="text-sm font-medium text-slate-800">{file.label}</p>
+                      <p className="text-xs text-slate-300">{formatFileSize(file.fileSize)}</p>
                     </div>
                   </div>
                   <a
                     href={`/api/download?url=${encodeURIComponent(file.url)}&name=${encodeURIComponent(file.fileName)}`}
-                    className="text-sm text-blue-600 hover:underline shrink-0"
+                    className="text-xs text-blue-500 font-medium hover:underline shrink-0"
                   >
                     다운로드
                   </a>
@@ -119,7 +126,7 @@ export default async function SharePage({ params }: { params: Promise<{ slug: st
           </div>
         )}
 
-        <p className="text-center text-xs text-gray-400">
+        <p className="text-center text-xs text-slate-300 pt-2">
           saupja.com으로 만든 사업자 정보 페이지
         </p>
       </div>
@@ -127,20 +134,12 @@ export default async function SharePage({ params }: { params: Promise<{ slug: st
   );
 }
 
-function InfoRow({
-  label,
-  value,
-  copyValue,
-}: {
-  label: string;
-  value: string;
-  copyValue?: string;
-}) {
+function InfoRow({ label, value, copyValue }: { label: string; value: string; copyValue?: string }) {
   return (
     <div className="flex items-start justify-between gap-2">
-      <span className="text-sm text-gray-500 w-24 shrink-0">{label}</span>
+      <span className="text-xs text-slate-400 w-20 shrink-0 pt-0.5">{label}</span>
       <div className="flex items-center gap-2 flex-1 justify-end">
-        <span className="text-sm font-medium text-right">{value}</span>
+        <span className="text-sm font-medium text-slate-800 text-right">{value}</span>
         {copyValue && <CopyButton value={copyValue} />}
       </div>
     </div>

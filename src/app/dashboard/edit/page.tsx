@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import FileUploader from "@/components/FileUploader";
 
@@ -35,7 +35,6 @@ const INITIAL: FormData = {
 };
 
 function EditForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
 
@@ -45,6 +44,8 @@ function EditForm() {
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(!!id);
   const [error, setError] = useState("");
+  const [verifying, setVerifying] = useState(false);
+  const [verifyResult, setVerifyResult] = useState<{ verified: boolean; message: string; statusLabel?: string; taxType?: string } | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -62,6 +63,19 @@ function EditForm() {
   function onChange(e: React.ChangeEvent<HTMLInputElement>) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     setSaved(false);
+  }
+
+  async function handleVerify() {
+    setVerifying(true);
+    setVerifyResult(null);
+    const res = await fetch("/api/verify-business", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ businessNumber: form.businessNumber }),
+    });
+    const data = await res.json();
+    setVerifyResult(data);
+    setVerifying(false);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -107,7 +121,6 @@ function EditForm() {
             {[
               { name: "companyName", label: "상호명", placeholder: "홍길동전기", required: true },
               { name: "ownerName", label: "대표자명", placeholder: "홍길동", required: true },
-              { name: "businessNumber", label: "사업자번호", placeholder: "000-00-00000", required: true },
               { name: "phone", label: "전화번호", placeholder: "02-0000-0000" },
             ].map(({ name, label, placeholder, required }) => (
               <div key={name}>
@@ -124,6 +137,39 @@ function EditForm() {
                 />
               </div>
             ))}
+
+            {/* 사업자번호 + 인증 버튼 */}
+            <div className="sm:col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                사업자번호 <span className="text-red-500">*</span>
+              </label>
+              <div className="flex gap-2">
+                <input
+                  name="businessNumber"
+                  value={form.businessNumber}
+                  onChange={(e) => { onChange(e); setVerifyResult(null); }}
+                  required
+                  className="flex-1 border border-gray-300 rounded-xl px-3 py-3 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="000-00-00000"
+                />
+                <button
+                  type="button"
+                  onClick={handleVerify}
+                  disabled={verifying || !form.businessNumber}
+                  className="shrink-0 px-4 py-3 rounded-xl text-sm font-medium bg-gray-100 text-gray-700 hover:bg-gray-200 disabled:opacity-50 transition"
+                >
+                  {verifying ? "조회 중..." : "인증"}
+                </button>
+              </div>
+              {verifyResult && (
+                <p className={`mt-1.5 text-sm flex items-center gap-1 ${verifyResult.verified ? "text-green-600" : "text-red-500"}`}>
+                  {verifyResult.verified ? "✓" : "✗"} {verifyResult.message}
+                  {verifyResult.taxType && (
+                    <span className="text-gray-400 text-xs ml-1">({verifyResult.taxType})</span>
+                  )}
+                </p>
+              )}
+            </div>
             <div className="sm:col-span-2">
               <label className="block text-sm font-medium text-gray-700 mb-1.5">사업장 주소</label>
               <input

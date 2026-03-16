@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import Link from "next/link";
 import { formatBusinessNumber, formatFileSize } from "@/lib/utils";
 import ImagePreview from "@/components/ImagePreview";
+import CopyButton from "@/components/CopyButton";
 
 export default async function BusinessDetailPage({
   params,
@@ -11,7 +12,8 @@ export default async function BusinessDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const session = await getSession();
-  if (!session?.user?.id) redirect("/login");
+  const userId = (session?.user as { id?: string })?.id;
+  if (!userId) redirect("/login");
 
   const { id } = await params;
 
@@ -20,13 +22,13 @@ export default async function BusinessDetailPage({
     include: { files: { orderBy: { createdAt: "asc" } } },
   });
 
-  if (!business || business.userId !== session.user.id) notFound();
+  if (!business || business.userId !== userId) notFound();
 
-  const imageFiles = business.files.filter((f) =>
+  const imageFiles = business.files.filter((f: { fileName: string }) =>
     /\.(jpg|jpeg|png|gif|webp)$/i.test(f.fileName)
   );
   const otherFiles = business.files.filter(
-    (f) => !/\.(jpg|jpeg|png|gif|webp)$/i.test(f.fileName)
+    (f: { fileName: string }) => !/\.(jpg|jpeg|png|gif|webp)$/i.test(f.fileName)
   );
 
   return (
@@ -67,7 +69,7 @@ export default async function BusinessDetailPage({
               <InfoRow label="은행명" value={business.bankName} />
             )}
             {business.accountNumber && (
-              <InfoRow label="계좌번호" value={business.accountNumber} />
+              <InfoRow label="계좌번호" value={business.accountNumber} copyValue={business.accountNumber} />
             )}
           </div>
         </section>
@@ -180,16 +182,21 @@ export default async function BusinessDetailPage({
 function InfoRow({
   label,
   value,
+  copyValue,
   className,
 }: {
   label: string;
   value: string;
+  copyValue?: string;
   className?: string;
 }) {
   return (
     <div className={className}>
       <p className="text-xs text-gray-400 mb-0.5">{label}</p>
-      <p className="text-sm font-medium">{value}</p>
+      <div className="flex items-center gap-2">
+        <p className="text-sm font-medium">{value}</p>
+        {copyValue && <CopyButton value={copyValue} />}
+      </div>
     </div>
   );
 }

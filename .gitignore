@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/src/generated/prisma
+
+# 업로드된 파일
+/public/uploads/*
+!/public/uploads/.gitkeep

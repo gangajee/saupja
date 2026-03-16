@@ -1,36 +1,176 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# saupja.com — 사업자 정보 공유 서비스
 
-## Getting Started
+> 사업자 정보를 한 곳에 모아, 링크 하나로 공유하세요.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 서비스 개요
+
+**saupja.com**은 사업자가 자주 제출해야 하는 서류(사업자 등록증, 통장 사본, 사업장 주소 등)를 한 곳에 업로드하고, 단 하나의 URL로 상대방에게 공유할 수 있는 서비스입니다.
+
+거래처, 협력사, 플랫폼 입점 시마다 반복적으로 파일을 찾아 보내는 번거로움을 없애는 것이 목표입니다.
+
+**레퍼런스:** [juso.io](https://juso.io)
+
+---
+
+## 핵심 문제 (Pain Point)
+
+- 거래처가 바뀔 때마다 동일한 서류를 이메일/카카오톡으로 반복 전송
+- 파일을 찾기 위해 컴퓨터나 클라우드를 뒤져야 하는 불편함
+- 사업자 등록증 갱신 시 기존에 보낸 파일이 구버전으로 남아있는 문제
+- 상대방이 링크를 열 때마다 항상 최신 정보를 확인할 수 없음
+
+---
+
+## 핵심 기능
+
+### 1. 사업자 정보 등록
+
+- 상호명, 대표자명, 사업자번호, 사업장 주소 텍스트 입력
+- 사업자 등록증 파일 업로드 (PDF / 이미지)
+- 통장 사본 파일 업로드 (PDF / 이미지)
+- 기타 서류 추가 업로드 (계좌번호, 인감증명서 등 선택)
+
+### 2. 공유 링크 생성
+
+- 고유 URL 자동 생성 (예: `saupja.com/u/홍길동전기`)
+- 링크 복사 원클릭 버튼
+- QR 코드 생성 및 다운로드
+
+### 3. 공유 페이지 (수신자 화면)
+
+- 브라우저에서 바로 열리는 깔끔한 프로필 페이지
+- 각 파일 개별 다운로드 버튼
+- 전체 다운로드 (ZIP) 버튼
+- 사업자번호 복사 버튼, 계좌번호 복사 버튼
+
+### 4. 파일 업데이트
+
+- 기존 URL은 유지한 채 파일만 교체 가능
+- 상대방이 링크를 다시 열면 자동으로 최신 버전 확인
+
+### 5. 공개/비공개 설정
+
+- 기본: 링크를 아는 사람만 접근 가능 (비밀 링크)
+- 옵션: 비밀번호 보호 설정
+
+---
+
+## 사용 흐름
+
+```
+[사업자]
+  1. saupja.com 회원가입 / 로그인
+  2. 사업자 정보 및 서류 업로드
+  3. 공유 링크 생성
+  4. 링크를 상대방에게 전송 (카톡, 이메일 등)
+
+[수신자]
+  1. 링크 클릭
+  2. 사업자 정보 확인
+  3. 필요한 파일 다운로드
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 기술 스택
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| 구분          | 기술                                          |
+| ------------- | --------------------------------------------- |
+| Frontend      | Next.js (App Router) + Tailwind CSS           |
+| Backend       | Next.js API Routes                            |
+| Database      | MySQL (PlanetScale — 무료)                    |
+| 파일 스토리지 | Cloudflare R2 (10GB/월 무료)                  |
+| 인증          | NextAuth.js / Auth.js (이메일 / 소셜 로그인)  |
+| 배포          | Vercel (무료)                                 |
+| 도메인        | saupja.com                                    |
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 페이지 구성
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+/                     → 랜딩 페이지 (서비스 소개)
+/signup               → 회원가입
+/login                → 로그인
+/dashboard            → 내 사업자 정보 관리
+/dashboard/edit       → 정보 수정 / 파일 업로드
+/u/[slug]             → 공유 페이지 (수신자용)
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 개발 단계 (로드맵)
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Phase 1 — MVP (로컬 개발)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [ ] 프로젝트 셋업 (Next.js + Tailwind)
+- [ ] 회원가입 / 로그인
+- [ ] 사업자 정보 입력 폼
+- [ ] 파일 업로드 (사업자 등록증, 통장 사본)
+- [ ] 공유 URL 생성
+- [ ] 수신자용 공유 페이지
+
+### Phase 2 — 서비스 배포
+
+- [ ] 도메인 연결 (saupja.com)
+- [ ] 파일 스토리지 연동
+- [ ] 모바일 반응형 UI 최적화
+- [ ] 링크 공개/비공개 설정
+
+### Phase 3 — 기능 확장
+
+- [ ] QR 코드 생성
+- [ ] 전체 파일 ZIP 다운로드
+- [ ] 파일 조회 통계 (몇 명이 열었는지)
+- [ ] 비밀번호 보호
+- [ ] 카카오톡 공유 버튼
+- [ ] 프리미엄 플랜 (다중 프로필, 커스텀 슬러그 등)
+
+---
+
+## 디렉토리 구조 (예정)
+
+```
+project2/
+├── app/
+│   ├── (auth)/
+│   │   ├── login/
+│   │   └── signup/
+│   ├── dashboard/
+│   │   ├── page.tsx
+│   │   └── edit/
+│   ├── u/
+│   │   └── [slug]/
+│   │       └── page.tsx
+│   ├── layout.tsx
+│   └── page.tsx
+├── components/
+│   ├── ui/
+│   ├── FileUploader.tsx
+│   ├── ShareCard.tsx
+│   └── ProfilePage.tsx
+├── lib/
+│   ├── db.ts
+│   └── utils.ts
+├── public/
+└── README.md
+```
+
+---
+
+## 비즈니스 모델 (향후)
+
+| 플랜     | 가격        | 내용                                             |
+| -------- | ----------- | ------------------------------------------------ |
+| Free     | 무료        | 프로필 1개, 파일 3개, 기본 URL                   |
+| Pro      | 월 9,900원  | 프로필 5개, 무제한 파일, 커스텀 URL, 조회 통계   |
+| Business | 월 29,900원 | 무제한 프로필, 팀 공유, 비밀번호 보호, 우선 지원 |
+
+---
+
+## 참고 링크
+
+- 레퍼런스 서비스: [juso.io](https://juso.io)
+- 배포 예정 도메인: [saupja.com](https://saupja.com)

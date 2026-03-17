@@ -4,13 +4,14 @@ import { prisma } from "@/lib/db";
 
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getSession();
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const userId = (session?.user as { id?: string })?.id;
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
   const data = await req.json();
 
   const business = await prisma.business.findUnique({ where: { id } });
-  if (!business || business.userId !== session.user.id) {
+  if (!business || business.userId !== userId) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
@@ -24,6 +25,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       phone: data.phone,
       bankName: data.bankName,
       accountNumber: data.accountNumber,
+      visibleFields: data.visibleFields ? JSON.stringify(data.visibleFields) : business.visibleFields,
+      sharePassword: data.sharePassword ?? business.sharePassword,
     },
   });
 
@@ -32,12 +35,13 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getSession();
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const userId = (session?.user as { id?: string })?.id;
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await params;
 
   const business = await prisma.business.findUnique({ where: { id } });
-  if (!business || business.userId !== session.user.id) {
+  if (!business || business.userId !== userId) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 

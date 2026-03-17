@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { generateSlug } from "@/lib/utils";
 
 export async function GET() {
   const session = await getSession();
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const userId = (session?.user as { id?: string })?.id;
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const businesses = await prisma.business.findMany({
-    where: { userId: session.user.id },
+    where: { userId },
     include: { files: true },
     orderBy: { createdAt: "desc" },
   });
@@ -18,21 +18,29 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const session = await getSession();
-  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const userId = (session?.user as { id?: string })?.id;
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const data = await req.json();
-  const { companyName, ownerName, businessNumber, address, phone, bankName, accountNumber } = data;
+  const { companyName, ownerName, businessNumber, address, phone, bankName, accountNumber, visibleFields, sharePassword } = data;
 
   if (!companyName || !ownerName || !businessNumber) {
     return NextResponse.json({ error: "필수 항목을 입력해주세요." }, { status: 400 });
   }
 
-  const slug = generateSlug(companyName);
+  // 사업자번호를 slug로 사용 (숫자만 추출)
+  const slug = businessNumber.replace(/\D/g, "");
+
+  // 중복 체크
+  const existing = await prisma.business.findUnique({ where: { slug } });
+  if (existing) {
+    return NextResponse.json({ error: "이미 등록된 사업자번호입니다." }, { status: 409 });
+  }
 
   const business = await prisma.business.create({
     data: {
       slug,
-      userId: session.user.id,
+      userId,
       companyName,
       ownerName,
       businessNumber,
@@ -40,6 +48,8 @@ export async function POST(req: NextRequest) {
       phone,
       bankName,
       accountNumber,
+      visibleFields: visibleFields ? JSON.stringify(visibleFields) : JSON.stringify(["ownerName", "phone", "address", "account", "files"]),
+      sharePassword: sharePassword || null,
     },
   });
 

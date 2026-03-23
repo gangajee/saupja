@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { saveFile } from "@/lib/storage";
+import { uploadFile } from "@/lib/storage";
+
+const isR2Configured =
+  !!process.env.R2_ACCOUNT_ID &&
+  !!process.env.R2_ACCESS_KEY_ID &&
+  !!process.env.R2_SECRET_ACCESS_KEY;
 
 export async function POST(
   req: NextRequest,
@@ -21,11 +26,19 @@ export async function POST(
   const file = formData.get("file") as File | null;
   if (!file) return NextResponse.json({ error: "파일이 없습니다." }, { status: 400 });
 
-  if (file.size > 5 * 1024 * 1024) {
-    return NextResponse.json({ error: "5MB 이하 파일만 업로드 가능합니다." }, { status: 400 });
+  if (file.size > 2 * 1024 * 1024) {
+    return NextResponse.json({ error: "2MB 이하 파일만 업로드 가능합니다." }, { status: 400 });
   }
 
-  const url = await saveFile(file);
+  let url: string;
+  const buffer = Buffer.from(await file.arrayBuffer());
+
+  if (isR2Configured) {
+    url = await uploadFile(buffer, file.name, file.type);
+  } else {
+    // R2 미설정 시 base64로 DB에 직접 저장
+    url = `data:${file.type};base64,${buffer.toString("base64")}`;
+  }
 
   await prisma.business.update({
     where: { id },

@@ -37,6 +37,25 @@ function formatBusinessNumber(n: string) {
 
 const MASKED = "•••••••••";
 
+function CopyLinkButton() {
+  const [copied, setCopied] = useState(false);
+
+  function handleCopy() {
+    navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  return (
+    <button
+      onClick={handleCopy}
+      className="text-xs text-slate-400 hover:text-slate-700 transition flex items-center gap-1"
+    >
+      {copied ? "복사됨 ✓" : "링크 복사"}
+    </button>
+  );
+}
+
 export default function ShareClient({ business: initial }: { business: Business }) {
   const visibleFields: string[] = (() => {
     try { return JSON.parse(initial.visibleFields ?? "[]"); } catch { return []; }
@@ -84,7 +103,10 @@ export default function ShareClient({ business: initial }: { business: Business 
       {/* 브랜드 바 */}
       <div className="border-b border-slate-100 px-5 py-3 flex items-center justify-between">
         <span className="text-xs font-semibold text-slate-300 tracking-widest uppercase">saupja.com</span>
-        <a href="/" className="text-xs text-slate-400 hover:text-slate-700 transition">서비스 소개 →</a>
+        <div className="flex items-center gap-3">
+          <CopyLinkButton />
+          <a href="/" className="text-xs text-slate-400 hover:text-slate-700 transition">서비스 소개 →</a>
+        </div>
       </div>
 
       <main className="flex-1 max-w-lg mx-auto w-full px-5 py-10 pb-20 space-y-4">

@@ -21,6 +21,7 @@ type Business = {
   phone: string | null;
   bankName: string | null;
   accountNumber: string | null;
+  profileImage: string | null;
   visibleFields: string | null;
   sharePassword: string | null;
   slug: string;
@@ -33,11 +34,6 @@ function formatBusinessNumber(n: string) {
   return n;
 }
 
-function formatFileSizeClient(bytes: number) {
-  if (bytes < 1024) return `${bytes}B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
-}
 
 const MASKED = "•••••••••";
 
@@ -94,12 +90,23 @@ export default function ShareClient({ business: initial }: { business: Business 
       <main className="flex-1 max-w-lg mx-auto w-full px-5 py-10 pb-20 space-y-4">
 
         {/* 회사 헤더 */}
-        <div className="pb-2">
-          <p className="text-xs font-semibold text-slate-300 uppercase tracking-widest mb-2">사업자 정보</p>
-          <h1 className="text-3xl font-bold text-slate-900 tracking-tight">{business.companyName}</h1>
-          <p className="text-sm text-slate-400 mt-1">
-            {isVisible("ownerName") ? `${business.ownerName} 대표` : <span className="text-slate-200 select-none">{MASKED} 대표</span>}
-          </p>
+        <div className="pb-2 flex items-center gap-4">
+          {business.profileImage ? (
+            <img src={business.profileImage} alt="로고" className="w-16 h-16 rounded-2xl object-cover border border-slate-100 shrink-0" />
+          ) : (
+            <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-7 h-7 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+            </div>
+          )}
+          <div>
+            <p className="text-xs font-semibold text-slate-300 uppercase tracking-widest mb-1">사업자 정보</p>
+            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">{business.companyName}</h1>
+            <p className="text-sm text-slate-400 mt-0.5">
+              {isVisible("ownerName") ? `${business.ownerName} 대표` : <span className="text-slate-200 select-none">{MASKED} 대표</span>}
+            </p>
+          </div>
         </div>
 
         {/* 비공개 잠금 해제 배너 */}
@@ -195,16 +202,9 @@ export default function ShareClient({ business: initial }: { business: Business 
             <div className="px-5 py-4 border-b border-slate-50">
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">첨부 이미지</p>
             </div>
-            <div className="p-5 space-y-6">
+            <div className="p-4 grid grid-cols-4 gap-2">
               {imageFiles.map((file) => (
-                <div key={file.id}>
-                  <div className="flex items-center justify-between mb-3">
-                    <p className="text-sm font-semibold text-slate-800">{file.label}</p>
-                    <a href={`/api/download?url=${encodeURIComponent(file.url)}&name=${encodeURIComponent(file.fileName)}`} className="text-xs font-semibold text-blue-500 hover:text-blue-700 transition">다운로드</a>
-                  </div>
-                  <ImagePreview src={file.url} alt={file.label} fileName={file.fileName} />
-                  <p className="text-xs text-slate-300 mt-2">{formatFileSizeClient(file.fileSize)}</p>
-                </div>
+                <ImagePreview key={file.id} src={file.url} alt={file.label} fileName={file.fileName} downloadUrl={`/api/download?url=${encodeURIComponent(file.url)}&name=${encodeURIComponent(file.fileName)}`} label={file.label} />
               ))}
             </div>
           </div>

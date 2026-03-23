@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
   const zipBuffer = await zip.generateAsync({ type: "nodebuffer" });
   const zipName = `${business.companyName}_서류.zip`;
 
-  return new NextResponse(zipBuffer, {
+  return new NextResponse(zipBuffer as unknown as BodyInit, {
     headers: {
       "Content-Type": "application/zip",
       "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(zipName)}`,

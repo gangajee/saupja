@@ -69,6 +69,8 @@ function EditForm() {
   const [verifyResult, setVerifyResult] = useState<{ verified: boolean; message: string; taxType?: string } | null>(null);
   const [visibleFields, setVisibleFields] = useState<VisibleField[]>([...ALL_FIELDS]);
   const [sharePassword, setSharePassword] = useState("");
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -87,6 +89,7 @@ function EditForm() {
             try { setVisibleFields(JSON.parse(found.visibleFields)); } catch { /* ignore */ }
           }
           if (found.sharePassword) setSharePassword(found.sharePassword);
+          if (found.profileImage) setProfileImage(found.profileImage);
         }
       });
   }, [id]);
@@ -294,6 +297,56 @@ function EditForm() {
             </Link>
           </div>
         </form>
+
+        {/* 대표 이미지 */}
+        {savedId ? (
+          <div className="bg-white rounded-2xl border border-slate-100 p-5 space-y-3">
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">대표 이미지</p>
+            <p className="text-xs text-slate-400">링크 공유 시 미리보기 카드에 표시됩니다.</p>
+            <div className="flex items-center gap-4">
+              {profileImage ? (
+                <img src={profileImage} alt="대표 이미지" className="w-20 h-20 rounded-xl object-cover border border-slate-100" />
+              ) : (
+                <div className="w-20 h-20 rounded-xl bg-slate-100 flex items-center justify-center text-3xl">🏢</div>
+              )}
+              <div className="flex flex-col gap-2">
+                <label className={`cursor-pointer px-4 py-2 rounded-xl text-sm font-medium border border-slate-200 text-slate-600 hover:bg-slate-50 transition ${uploadingImage ? "opacity-50 pointer-events-none" : ""}`}>
+                  {uploadingImage ? "업로드 중..." : profileImage ? "이미지 변경" : "이미지 업로드"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+                      setUploadingImage(true);
+                      const fd = new FormData();
+                      fd.append("file", file);
+                      const res = await fetch(`/api/business/${savedId}/profile-image`, { method: "POST", body: fd });
+                      if (res.ok) {
+                        const data = await res.json();
+                        setProfileImage(data.url);
+                      }
+                      setUploadingImage(false);
+                    }}
+                  />
+                </label>
+                {profileImage && (
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await fetch(`/api/business/${savedId}/profile-image`, { method: "DELETE" });
+                      setProfileImage(null);
+                    }}
+                    className="text-xs text-red-400 hover:text-red-600 text-left"
+                  >
+                    이미지 삭제
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : null}
 
         {/* 파일 업로드 */}
         {savedId ? (

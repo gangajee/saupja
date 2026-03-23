@@ -7,50 +7,51 @@ type Props = {
   src: string;
   alt: string;
   fileName: string;
+  downloadUrl?: string;
+  label?: string;
 };
 
-export default function ImagePreview({ src, alt, fileName }: Props) {
+export default function ImagePreview({ src, alt, fileName, downloadUrl, label }: Props) {
   const [enlarged, setEnlarged] = useState(false);
 
   return (
     <>
       <div
-        className="relative w-full h-48 bg-gray-100 rounded-lg overflow-hidden cursor-zoom-in border"
+        className="relative aspect-square bg-slate-100 rounded-lg overflow-hidden cursor-zoom-in"
         onClick={() => setEnlarged(true)}
       >
-        <Image
-          src={src}
-          alt={alt}
-          fill
-          className="object-contain"
-          unoptimized
-        />
-        <div className="absolute inset-0 flex items-end justify-end p-2 opacity-0 hover:opacity-100 transition">
-          <span className="bg-black/50 text-white text-xs rounded px-2 py-1">
-            크게 보기
-          </span>
-        </div>
+        <Image src={src} alt={alt} fill className="object-cover" unoptimized />
+        <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition" />
       </div>
 
-      {/* 확대 모달 */}
       {enlarged && (
         <div
           className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
           onClick={() => setEnlarged(false)}
         >
-          <div className="relative max-w-4xl max-h-full w-full" onClick={(e) => e.stopPropagation()}>
-            <button
-              onClick={() => setEnlarged(false)}
-              className="absolute -top-10 right-0 text-white text-sm hover:text-gray-300"
-            >
-              닫기 ✕
-            </button>
+          <div className="relative max-w-4xl w-full" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-white text-sm font-medium">{label || fileName}</p>
+              <div className="flex items-center gap-3">
+                {downloadUrl && (
+                  <a
+                    href={downloadUrl}
+                    className="text-xs text-slate-300 hover:text-white transition"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    다운로드
+                  </a>
+                )}
+                <button onClick={() => setEnlarged(false)} className="text-slate-300 hover:text-white transition text-sm">
+                  닫기 ✕
+                </button>
+              </div>
+            </div>
             <img
               src={src}
               alt={alt}
-              className="max-w-full max-h-[85vh] object-contain mx-auto rounded"
+              className="max-w-full max-h-[80vh] object-contain mx-auto rounded-xl"
             />
-            <p className="text-center text-gray-400 text-xs mt-3">{fileName}</p>
           </div>
         </div>
       )}

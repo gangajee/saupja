@@ -43,6 +43,11 @@ export async function uploadFile(
   return `/uploads/${key}`;
 }
 
+export async function saveFile(file: File): Promise<string> {
+  const buffer = Buffer.from(await file.arrayBuffer());
+  return uploadFile(buffer, file.name, file.type);
+}
+
 export async function deleteFile(url: string): Promise<void> {
   if (r2 && url.startsWith("http")) {
     const key = url.split("/").pop()!;

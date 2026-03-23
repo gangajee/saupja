@@ -9,7 +9,7 @@ datasource db {
 
 model User {
   id         String     @id @default(cuid())
-  email      String     @unique
+  email      String?    @unique
   password   String?
   name       String?
   createdAt  DateTime   @default(now())
@@ -56,6 +56,7 @@ model Business {
   phone          String?
   bankName       String?
   accountNumber  String?
+  profileImage   String?                  // 대표 이미지 URL
   isPublic       Boolean        @default(true)
   password       String?
   visibleFields  String?        @db.Text  // JSON: ["ownerName","phone","address","account","files"]

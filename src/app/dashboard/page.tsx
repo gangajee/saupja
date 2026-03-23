@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import Link from "next/link";
 import { formatBusinessNumber } from "@/lib/utils";
+import DeleteBusinessButton from "@/components/DeleteBusinessButton";
 
 export default async function DashboardPage() {
   const session = await getSession();
@@ -81,6 +82,7 @@ export default async function DashboardPage() {
                   <Link href={`/dashboard/edit?id=${b.id}`} className="flex-1 text-center py-3 text-slate-400 hover:bg-slate-50 transition active:bg-slate-50">
                     수정
                   </Link>
+                  <DeleteBusinessButton id={b.id} />
                 </div>
               </div>
             ))}

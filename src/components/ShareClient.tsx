@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import CopyButton from "@/components/CopyButton";
 import ImagePreview from "@/components/ImagePreview";
+import BusinessAvatar from "@/components/BusinessAvatar";
 import { formatFileSize } from "@/lib/utils";
 
 type BusinessFile = {
@@ -70,7 +71,7 @@ function QRModal({ url, onClose }: { url: string; onClose: () => void }) {
   );
 }
 
-function KakaoShareButton({ url, title, description }: { url: string; title: string; description: string }) {
+function KakaoShareButton({ url }: { url: string }) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -94,17 +95,8 @@ function KakaoShareButton({ url, title, description }: { url: string; title: str
   }, []);
 
   function handleShare() {
-    const kakao = (window as unknown as { Kakao: { Share: { sendDefault: (opts: object) => void } } }).Kakao;
-    kakao.Share.sendDefault({
-      objectType: "feed",
-      content: {
-        title,
-        description,
-        imageUrl: `${url}/api/og`,
-        link: { mobileWebUrl: url, webUrl: url },
-      },
-      buttons: [{ title: "정보 보기", link: { mobileWebUrl: url, webUrl: url } }],
-    });
+    const kakao = (window as unknown as { Kakao: { Share: { sendScrap: (opts: object) => void } } }).Kakao;
+    kakao.Share.sendScrap({ requestUrl: url });
   }
 
   if (!ready) return null;
@@ -177,11 +169,7 @@ export default function ShareClient({ business: initial }: { business: Business 
       <div className="border-b border-slate-100 px-5 py-3 flex items-center justify-between">
         <span className="text-xs font-semibold text-slate-300 tracking-widest uppercase">saupja.com</span>
         <div className="flex items-center gap-2">
-          <KakaoShareButton
-            url={pageUrl}
-            title={initial.companyName}
-            description={`${initial.ownerName} 대표 · 사업자 정보`}
-          />
+          <KakaoShareButton url={pageUrl} />
           <button
             onClick={() => setShowQR(true)}
             className="text-xs text-slate-400 hover:text-slate-700 transition flex items-center gap-1"
@@ -198,15 +186,7 @@ export default function ShareClient({ business: initial }: { business: Business 
 
         {/* 회사 헤더 */}
         <div className="pb-2 flex items-center gap-4">
-          {business.profileImage ? (
-            <img src={business.profileImage} alt="로고" className="w-16 h-16 rounded-2xl object-cover border border-slate-100 shrink-0" />
-          ) : (
-            <div className="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center shrink-0">
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-7 h-7 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
-            </div>
-          )}
+          <BusinessAvatar name={business.companyName} image={business.profileImage} size="lg" />
           <div>
             <p className="text-xs font-semibold text-slate-300 uppercase tracking-widest mb-1">사업자 정보</p>
             <h1 className="text-2xl font-bold text-slate-900 tracking-tight">{business.companyName}</h1>

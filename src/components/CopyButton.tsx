@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useCallback, useState } from "react";
 
-export default function CopyButton({ value }: { value: string }) {
+const CopyButton = memo(function CopyButton({ value }: { value: string }) {
   const [copied, setCopied] = useState(false);
 
-  async function handleCopy() {
+  const handleCopy = useCallback(async () => {
     await navigator.clipboard.writeText(value);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  }
+  }, [value]);
 
   return (
     <button
@@ -23,4 +23,6 @@ export default function CopyButton({ value }: { value: string }) {
       {copied ? "복사됨" : "복사"}
     </button>
   );
-}
+});
+
+export default CopyButton;

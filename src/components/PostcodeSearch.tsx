@@ -1,10 +1,12 @@
 "use client";
 
+import { memo } from "react";
+
 interface Props {
   onSelect: (postcode: string, address: string) => void;
 }
 
-export default function PostcodeSearch({ onSelect }: Props) {
+const PostcodeSearch = memo(function PostcodeSearch({ onSelect }: Props) {
   function handleClick() {
     const script = document.createElement("script");
     script.src = "https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js";
@@ -16,6 +18,7 @@ export default function PostcodeSearch({ onSelect }: Props) {
         },
       }).open();
     };
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     if (!(window as any).daum?.Postcode) {
       document.head.appendChild(script);
     } else {
@@ -32,4 +35,6 @@ export default function PostcodeSearch({ onSelect }: Props) {
       주소 검색
     </button>
   );
-}
+});
+
+export default PostcodeSearch;

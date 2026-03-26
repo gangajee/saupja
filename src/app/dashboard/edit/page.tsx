@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { memo, useCallback, useEffect, useRef, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import FileUploader from "@/components/FileUploader";
 import PostcodeSearch from "@/components/PostcodeSearch";
+import BusinessAvatar from "@/components/BusinessAvatar";
 
 type BusinessFile = {
   id: string;
@@ -52,6 +53,128 @@ function splitAddress(address: string) {
   return { postcode: "", base: address, detail: "" };
 }
 
+// ─── Extracted sub-components ─────────────────────────────────────────────────
+
+// Only re-renders when visibleFields or sharePassword changes, not on every form keystroke
+const VisibilitySection = memo(function VisibilitySection({
+  visibleFields,
+  sharePassword,
+  onToggleField,
+  onPasswordChange,
+}: {
+  visibleFields: VisibleField[];
+  sharePassword: string;
+  onToggleField: (field: VisibleField) => void;
+  onPasswordChange: (pw: string) => void;
+}) {
+  const handlePasswordChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => onPasswordChange(e.target.value),
+    [onPasswordChange]
+  );
+
+  return (
+    <div className="bg-white rounded-2xl border border-slate-100 p-5 space-y-4">
+      <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">공개 설정</p>
+      <p className="text-xs text-slate-400">체크된 항목은 누구나 볼 수 있고, 체크 해제된 항목은 비밀번호 입력 후 열람 가능합니다.</p>
+      <div className="space-y-3">
+        {ALL_FIELDS.map((field) => (
+          <label key={field} className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={visibleFields.includes(field)}
+              onChange={() => onToggleField(field)}
+              className="w-4 h-4 rounded border-slate-300 accent-slate-900"
+            />
+            <span className="text-sm font-medium text-slate-700">{FIELD_LABELS[field]}</span>
+            {!visibleFields.includes(field) && (
+              <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">비공개</span>
+            )}
+          </label>
+        ))}
+      </div>
+
+      <div>
+        <label className="block text-xs font-medium text-slate-500 mb-1.5 uppercase tracking-wide">
+          비공개 열람 비밀번호
+        </label>
+        <input
+          type="text"
+          value={sharePassword}
+          onChange={handlePasswordChange}
+          className="w-full border border-slate-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900"
+          placeholder="비공개 항목 열람 시 사용할 비밀번호"
+        />
+        <p className="text-xs text-slate-300 mt-1">비어있으면 비공개 항목을 열람할 수 없습니다.</p>
+      </div>
+    </div>
+  );
+});
+
+// Owns its own upload/delete state — isolated from the main form re-render cycle
+const ProfileImageSection = memo(function ProfileImageSection({
+  savedId,
+  companyName,
+  initialImage,
+}: {
+  savedId: string;
+  companyName: string;
+  initialImage: string | null;
+}) {
+  const [profileImage, setProfileImage] = useState(initialImage);
+  const [uploading, setUploading] = useState(false);
+
+  // Sync when parent fetches existing data
+  useEffect(() => {
+    setProfileImage(initialImage);
+  }, [initialImage]);
+
+  const handleUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    const fd = new FormData();
+    fd.append("file", file);
+    const res = await fetch(`/api/business/${savedId}/profile-image`, { method: "POST", body: fd });
+    if (res.ok) {
+      const data = await res.json();
+      setProfileImage(data.url);
+    }
+    setUploading(false);
+  }, [savedId]);
+
+  const handleDelete = useCallback(async () => {
+    await fetch(`/api/business/${savedId}/profile-image`, { method: "DELETE" });
+    setProfileImage(null);
+  }, [savedId]);
+
+  return (
+    <div className="bg-white rounded-2xl border border-slate-100 p-5 space-y-3">
+      <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">대표 이미지</p>
+      <p className="text-xs text-slate-400">링크 공유 시 미리보기 카드에 표시됩니다.</p>
+      <div className="flex items-center gap-4">
+        {profileImage ? (
+          <img src={profileImage} alt="대표 이미지" className="w-20 h-20 rounded-xl object-cover border border-slate-100" />
+        ) : (
+          <BusinessAvatar name={companyName || "?"} size="lg" />
+        )}
+        <div className="flex flex-col gap-2">
+          <label className={`cursor-pointer px-4 py-2 rounded-xl text-sm font-medium border border-slate-200 text-slate-600 hover:bg-slate-50 transition ${uploading ? "opacity-50 pointer-events-none" : ""}`}>
+            {uploading ? "업로드 중..." : profileImage ? "이미지 변경" : "이미지 업로드"}
+            <input type="file" accept="image/*" className="hidden" onChange={handleUpload} />
+          </label>
+          {profileImage && (
+            <button type="button" onClick={handleDelete} className="text-xs text-red-400 hover:text-red-600 text-left">
+              이미지 삭제
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+});
+
+// ─── Main form ────────────────────────────────────────────────────────────────
+
 function EditForm() {
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
@@ -69,8 +192,7 @@ function EditForm() {
   const [verifyResult, setVerifyResult] = useState<{ verified: boolean; message: string; taxType?: string } | null>(null);
   const [visibleFields, setVisibleFields] = useState<VisibleField[]>([...ALL_FIELDS]);
   const [sharePassword, setSharePassword] = useState("");
-  const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [uploadingImage, setUploadingImage] = useState(false);
+  const [initialProfileImage, setInitialProfileImage] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -89,44 +211,75 @@ function EditForm() {
             try { setVisibleFields(JSON.parse(found.visibleFields)); } catch { /* ignore */ }
           }
           if (found.sharePassword) setSharePassword(found.sharePassword);
-          if (found.profileImage) setProfileImage(found.profileImage);
+          setInitialProfileImage(found.profileImage ?? null);
         }
       });
   }, [id]);
 
-  function onChange(e: React.ChangeEvent<HTMLInputElement>) {
+  // Stable handlers — use functional updates where possible to avoid stale closures
+  const onChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     setSaved(false);
-  }
+  }, []);
 
-  function toggleField(field: VisibleField) {
+  const toggleField = useCallback((field: VisibleField) => {
     setVisibleFields((prev) =>
       prev.includes(field) ? prev.filter((f) => f !== field) : [...prev, field]
     );
     setSaved(false);
-  }
+  }, []);
 
-  async function handleVerify() {
+  const handlePasswordChange = useCallback((pw: string) => {
+    setSharePassword(pw);
+    setSaved(false);
+  }, []);
+
+  const handlePostcodeSelect = useCallback((code: string, addr: string) => {
+    setPostcode(code);
+    setBaseAddress(addr);
+    setDetailAddress("");
+    setSaved(false);
+  }, []);
+
+  const handleDetailChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setDetailAddress(e.target.value);
+    setSaved(false);
+  }, []);
+
+  const handleFilesUpdate = useCallback((newFiles: BusinessFile[]) => {
+    setFiles(newFiles);
+  }, []);
+
+  // Use ref so handleVerify closure always reads fresh businessNumber without recreating itself
+  const businessNumberRef = useRef(form.businessNumber);
+  useEffect(() => { businessNumberRef.current = form.businessNumber; }, [form.businessNumber]);
+
+  const handleVerify = useCallback(async () => {
     setVerifying(true);
     setVerifyResult(null);
     const res = await fetch("/api/verify-business", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ businessNumber: form.businessNumber }),
+      body: JSON.stringify({ businessNumber: businessNumberRef.current }),
     });
     const data = await res.json();
     setVerifyResult(data);
     setVerifying(false);
-  }
+  }, []);
 
-  async function handleSubmit(e: React.SyntheticEvent) {
+  // Refs for submit to avoid stale deps while keeping stable callback reference
+  const submitRef = useRef({ form, baseAddress, postcode, detailAddress, savedId, visibleFields, sharePassword });
+  useEffect(() => {
+    submitRef.current = { form, baseAddress, postcode, detailAddress, savedId, visibleFields, sharePassword };
+  });
+
+  const handleSubmit = useCallback(async (e: React.SyntheticEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
-    const combined = baseAddress
-      ? `(${postcode}) ${baseAddress} | ${detailAddress}`
-      : form.address;
+    const { form, baseAddress, postcode, detailAddress, savedId, visibleFields, sharePassword } = submitRef.current;
+    const combined = baseAddress ? `(${postcode}) ${baseAddress} | ${detailAddress}` : form.address;
 
     const res = await fetch(savedId ? `/api/business/${savedId}` : "/api/business", {
       method: savedId ? "PUT" : "POST",
@@ -150,7 +303,7 @@ function EditForm() {
     const data = await res.json();
     setSavedId(data.id);
     setSaved(true);
-  }
+  }, []);
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -228,10 +381,10 @@ function EditForm() {
                 <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide">사업장 주소</label>
                 <div className="flex gap-2">
                   <input value={postcode} readOnly className="w-24 border border-slate-200 rounded-xl px-3 py-3 text-sm bg-slate-50 text-slate-400" placeholder="우편번호" />
-                  <PostcodeSearch onSelect={(code, addr) => { setPostcode(code); setBaseAddress(addr); setDetailAddress(""); setSaved(false); }} />
+                  <PostcodeSearch onSelect={handlePostcodeSelect} />
                 </div>
                 <input value={baseAddress} readOnly className="w-full border border-slate-200 rounded-xl px-3 py-3 text-sm bg-slate-50 text-slate-400" placeholder="기본 주소 (주소 검색 후 자동 입력)" />
-                <input value={detailAddress} onChange={(e) => { setDetailAddress(e.target.value); setSaved(false); }} className="w-full border border-slate-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" placeholder="상세 주소 (동/호수 등)" />
+                <input value={detailAddress} onChange={handleDetailChange} className="w-full border border-slate-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" placeholder="상세 주소 (동/호수 등)" />
               </div>
 
               {/* 계좌 */}
@@ -246,41 +399,13 @@ function EditForm() {
             </div>
           </div>
 
-          {/* 공개 설정 */}
-          <div className="bg-white rounded-2xl border border-slate-100 p-5 space-y-4">
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">공개 설정</p>
-            <p className="text-xs text-slate-400">체크된 항목은 누구나 볼 수 있고, 체크 해제된 항목은 비밀번호 입력 후 열람 가능합니다.</p>
-            <div className="space-y-3">
-              {ALL_FIELDS.map((field) => (
-                <label key={field} className="flex items-center gap-3 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={visibleFields.includes(field)}
-                    onChange={() => toggleField(field)}
-                    className="w-4 h-4 rounded border-slate-300 accent-slate-900"
-                  />
-                  <span className="text-sm font-medium text-slate-700">{FIELD_LABELS[field]}</span>
-                  {!visibleFields.includes(field) && (
-                    <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">비공개</span>
-                  )}
-                </label>
-              ))}
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-slate-500 mb-1.5 uppercase tracking-wide">
-                비공개 열람 비밀번호
-              </label>
-              <input
-                type="text"
-                value={sharePassword}
-                onChange={(e) => { setSharePassword(e.target.value); setSaved(false); }}
-                className="w-full border border-slate-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900"
-                placeholder="비공개 항목 열람 시 사용할 비밀번호"
-              />
-              <p className="text-xs text-slate-300 mt-1">비어있으면 비공개 항목을 열람할 수 없습니다.</p>
-            </div>
-          </div>
+          {/* 공개 설정 — memoized, skips re-render on form keystrokes */}
+          <VisibilitySection
+            visibleFields={visibleFields}
+            sharePassword={sharePassword}
+            onToggleField={toggleField}
+            onPasswordChange={handlePasswordChange}
+          />
 
           {error && <p className="text-red-500 text-sm px-1">{error}</p>}
 
@@ -298,60 +423,19 @@ function EditForm() {
           </div>
         </form>
 
-        {/* 대표 이미지 */}
-        {savedId ? (
-          <div className="bg-white rounded-2xl border border-slate-100 p-5 space-y-3">
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">대표 이미지</p>
-            <p className="text-xs text-slate-400">링크 공유 시 미리보기 카드에 표시됩니다.</p>
-            <div className="flex items-center gap-4">
-              {profileImage ? (
-                <img src={profileImage} alt="대표 이미지" className="w-20 h-20 rounded-xl object-cover border border-slate-100" />
-              ) : (
-                <div className="w-20 h-20 rounded-xl bg-slate-100 flex items-center justify-center text-3xl">🏢</div>
-              )}
-              <div className="flex flex-col gap-2">
-                <label className={`cursor-pointer px-4 py-2 rounded-xl text-sm font-medium border border-slate-200 text-slate-600 hover:bg-slate-50 transition ${uploadingImage ? "opacity-50 pointer-events-none" : ""}`}>
-                  {uploadingImage ? "업로드 중..." : profileImage ? "이미지 변경" : "이미지 업로드"}
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      setUploadingImage(true);
-                      const fd = new FormData();
-                      fd.append("file", file);
-                      const res = await fetch(`/api/business/${savedId}/profile-image`, { method: "POST", body: fd });
-                      if (res.ok) {
-                        const data = await res.json();
-                        setProfileImage(data.url);
-                      }
-                      setUploadingImage(false);
-                    }}
-                  />
-                </label>
-                {profileImage && (
-                  <button
-                    type="button"
-                    onClick={async () => {
-                      await fetch(`/api/business/${savedId}/profile-image`, { method: "DELETE" });
-                      setProfileImage(null);
-                    }}
-                    className="text-xs text-red-400 hover:text-red-600 text-left"
-                  >
-                    이미지 삭제
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        ) : null}
+        {/* 대표 이미지 — memoized, owns upload state independently */}
+        {savedId && (
+          <ProfileImageSection
+            savedId={savedId}
+            companyName={form.companyName}
+            initialImage={initialProfileImage}
+          />
+        )}
 
         {/* 파일 업로드 */}
         {savedId ? (
           <div className="bg-white rounded-2xl border border-slate-100 p-5">
-            <FileUploader businessId={savedId} files={files} onUpdate={setFiles} />
+            <FileUploader businessId={savedId} files={files} onUpdate={handleFilesUpdate} />
           </div>
         ) : (
           <div className="bg-white rounded-2xl border border-slate-100 p-5 opacity-40 pointer-events-none text-center text-sm text-slate-400">

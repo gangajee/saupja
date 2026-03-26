@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import { formatFileSize } from "@/lib/utils";
 
 type BusinessFile = {
@@ -24,6 +24,31 @@ const FILE_TYPES = [
   { value: "other", label: "기타 서류" },
 ];
 
+// Extracted so uploading/type state changes don't re-render the file list
+const FileItem = memo(function FileItem({
+  file,
+  onDelete,
+}: {
+  file: BusinessFile;
+  onDelete: (id: string) => void;
+}) {
+  const handleClick = useCallback(() => onDelete(file.id), [onDelete, file.id]);
+
+  return (
+    <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl gap-2">
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-medium truncate">{file.label}</p>
+        <p className="text-xs text-gray-400 truncate">
+          {file.fileName} · {formatFileSize(file.fileSize)}
+        </p>
+      </div>
+      <button onClick={handleClick} className="text-red-400 text-sm shrink-0 px-2 py-1">
+        삭제
+      </button>
+    </div>
+  );
+});
+
 export default function FileUploader({ businessId, files, onUpdate }: Props) {
   const [uploading, setUploading] = useState(false);
   const [selectedType, setSelectedType] = useState("registration");
@@ -31,7 +56,11 @@ export default function FileUploader({ businessId, files, onUpdate }: Props) {
   const [error, setError] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  async function handleUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  // Ref to always access the latest files without making handleDelete depend on it
+  const filesRef = useRef(files);
+  useEffect(() => { filesRef.current = files; }, [files]);
+
+  const handleUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -62,17 +91,24 @@ export default function FileUploader({ businessId, files, onUpdate }: Props) {
     }
 
     const newFile = await res.json();
-    onUpdate([...files, newFile]);
+    onUpdate([...filesRef.current, newFile]);
     if (inputRef.current) inputRef.current.value = "";
-  }
+  }, [businessId, selectedType, customLabel, onUpdate]);
 
-  async function handleDelete(fileId: string) {
+  // Uses filesRef so this callback never needs to be recreated when files change
+  const handleDelete = useCallback(async (fileId: string) => {
     if (!confirm("파일을 삭제할까요?")) return;
-    const res = await fetch(`/api/business/${businessId}/files/${fileId}`, {
-      method: "DELETE",
-    });
-    if (res.ok) onUpdate(files.filter((f) => f.id !== fileId));
-  }
+    const res = await fetch(`/api/business/${businessId}/files/${fileId}`, { method: "DELETE" });
+    if (res.ok) onUpdate(filesRef.current.filter((f) => f.id !== fileId));
+  }, [businessId, onUpdate]);
+
+  const handleTypeChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSelectedType(e.target.value);
+  }, []);
+
+  const handleLabelChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setCustomLabel(e.target.value);
+  }, []);
 
   return (
     <div className="space-y-4">
@@ -81,20 +117,7 @@ export default function FileUploader({ businessId, files, onUpdate }: Props) {
       {files.length > 0 && (
         <div className="space-y-2">
           {files.map((file) => (
-            <div key={file.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl gap-2">
-              <div className="min-w-0 flex-1">
-                <p className="text-sm font-medium truncate">{file.label}</p>
-                <p className="text-xs text-gray-400 truncate">
-                  {file.fileName} · {formatFileSize(file.fileSize)}
-                </p>
-              </div>
-              <button
-                onClick={() => handleDelete(file.id)}
-                className="text-red-400 text-sm shrink-0 px-2 py-1"
-              >
-                삭제
-              </button>
-            </div>
+            <FileItem key={file.id} file={file} onDelete={handleDelete} />
           ))}
         </div>
       )}
@@ -102,7 +125,7 @@ export default function FileUploader({ businessId, files, onUpdate }: Props) {
       <div className="border-2 border-dashed border-gray-200 rounded-xl p-4 space-y-3">
         <select
           value={selectedType}
-          onChange={(e) => setSelectedType(e.target.value)}
+          onChange={handleTypeChange}
           className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
         >
           {FILE_TYPES.map((t) => (
@@ -113,7 +136,7 @@ export default function FileUploader({ businessId, files, onUpdate }: Props) {
         {selectedType === "other" && (
           <input
             value={customLabel}
-            onChange={(e) => setCustomLabel(e.target.value)}
+            onChange={handleLabelChange}
             placeholder="서류 이름 입력"
             className="w-full border border-gray-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />

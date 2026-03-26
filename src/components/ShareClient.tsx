@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { QRCodeSVG } from "qrcode.react";
 import CopyButton from "@/components/CopyButton";
 import ImagePreview from "@/components/ImagePreview";
 import { formatFileSize } from "@/lib/utils";
@@ -56,6 +57,71 @@ function CopyLinkButton() {
   );
 }
 
+function QRModal({ url, onClose }: { url: string; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={onClose}>
+      <div className="bg-white rounded-2xl p-6 flex flex-col items-center gap-4 shadow-xl" onClick={(e) => e.stopPropagation()}>
+        <p className="text-sm font-semibold text-slate-700">QR 코드로 공유</p>
+        <QRCodeSVG value={url} size={200} />
+        <p className="text-xs text-slate-400 text-center max-w-[200px] break-all">{url}</p>
+        <button onClick={onClose} className="text-xs text-slate-400 hover:text-slate-700 transition">닫기</button>
+      </div>
+    </div>
+  );
+}
+
+function KakaoShareButton({ url, title, description }: { url: string; title: string; description: string }) {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const jsKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY;
+    if (!jsKey) return;
+
+    if ((window as unknown as { Kakao?: { isInitialized?: () => boolean; init?: (key: string) => void } }).Kakao?.isInitialized?.()) {
+      setReady(true);
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js";
+    script.async = true;
+    script.onload = () => {
+      (window as unknown as { Kakao: { isInitialized: () => boolean; init: (key: string) => void } }).Kakao.init(jsKey);
+      setReady(true);
+    };
+    document.head.appendChild(script);
+  }, []);
+
+  function handleShare() {
+    const kakao = (window as unknown as { Kakao: { Share: { sendDefault: (opts: object) => void } } }).Kakao;
+    kakao.Share.sendDefault({
+      objectType: "feed",
+      content: {
+        title,
+        description,
+        imageUrl: `${url}/api/og`,
+        link: { mobileWebUrl: url, webUrl: url },
+      },
+      buttons: [{ title: "정보 보기", link: { mobileWebUrl: url, webUrl: url } }],
+    });
+  }
+
+  if (!ready) return null;
+
+  return (
+    <button
+      onClick={handleShare}
+      className="flex items-center gap-1.5 text-xs font-semibold bg-[#FEE500] text-[#191919] px-3 py-1.5 rounded-lg hover:bg-[#F5DC00] transition"
+    >
+      <svg width="14" height="14" viewBox="0 0 18 18" fill="none">
+        <path fillRule="evenodd" clipRule="evenodd" d="M9 1C4.582 1 1 3.896 1 7.445c0 2.234 1.42 4.196 3.573 5.33L3.74 16.07a.23.23 0 00.338.254l4.116-2.73c.267.026.537.04.81.04 4.418 0 8-2.896 8-6.445C17 3.896 13.418 1 9 1z" fill="#191919"/>
+      </svg>
+      카카오 공유
+    </button>
+  );
+}
+
 export default function ShareClient({ business: initial }: { business: Business }) {
   const visibleFields: string[] = (() => {
     try { return JSON.parse(initial.visibleFields ?? "[]"); } catch { return []; }
@@ -65,6 +131,13 @@ export default function ShareClient({ business: initial }: { business: Business 
   const hasHidden = initial.visibleFields
     ? ["ownerName", "phone", "address", "account", "files"].some((f) => !visibleFields.includes(f))
     : false;
+
+  const [showQR, setShowQR] = useState(false);
+  const [pageUrl, setPageUrl] = useState("");
+
+  useEffect(() => {
+    setPageUrl(window.location.href);
+  }, []);
 
   const [unlocked, setUnlocked] = useState(false);
   const [business, setBusiness] = useState(initial);
@@ -103,11 +176,23 @@ export default function ShareClient({ business: initial }: { business: Business 
       {/* 브랜드 바 */}
       <div className="border-b border-slate-100 px-5 py-3 flex items-center justify-between">
         <span className="text-xs font-semibold text-slate-300 tracking-widest uppercase">saupja.com</span>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          <KakaoShareButton
+            url={pageUrl}
+            title={initial.companyName}
+            description={`${initial.ownerName} 대표 · 사업자 정보`}
+          />
+          <button
+            onClick={() => setShowQR(true)}
+            className="text-xs text-slate-400 hover:text-slate-700 transition flex items-center gap-1"
+          >
+            QR
+          </button>
           <CopyLinkButton />
-          <a href="/" className="text-xs text-slate-400 hover:text-slate-700 transition">서비스 소개 →</a>
         </div>
       </div>
+
+      {showQR && pageUrl && <QRModal url={pageUrl} onClose={() => setShowQR(false)} />}
 
       <main className="flex-1 max-w-lg mx-auto w-full px-5 py-10 pb-20 space-y-4">
 

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import KakaoLoginButton from "@/components/KakaoLoginButton";
 
 const FEATURES = [
   {
@@ -44,16 +44,8 @@ export default function LandingPage() {
     <div className="min-h-screen flex flex-col bg-white">
       {/* Header */}
       <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-100">
-        <div className="max-w-4xl mx-auto px-6 h-14 flex items-center justify-between">
+        <div className="max-w-4xl mx-auto px-6 h-14 flex items-center">
           <span className="font-bold text-slate-900 tracking-tight">사업자</span>
-          <div className="flex items-center gap-1">
-            <Link href="/login" className="px-4 py-2 text-sm text-slate-500 hover:text-slate-900 transition rounded-lg">
-              로그인
-            </Link>
-            <Link href="/signup" className="px-4 py-2 text-sm font-semibold bg-slate-900 text-white rounded-lg hover:bg-slate-700 transition">
-              시작하기
-            </Link>
-          </div>
         </div>
       </header>
 
@@ -69,12 +61,7 @@ export default function LandingPage() {
           <p className="text-lg text-slate-400 max-w-md mx-auto leading-relaxed mb-12">
             사업자 등록증, 통장 사본, 계좌번호를<br />URL 하나로 거래처에 바로 공유하세요.
           </p>
-          <Link
-            href="/signup"
-            className="inline-block bg-slate-900 text-white px-10 py-4 rounded-xl text-base font-semibold hover:bg-slate-700 transition"
-          >
-            무료로 시작하기
-          </Link>
+          <KakaoLoginButton className="inline-flex items-center gap-2.5 bg-[#FEE500] text-[#191919] px-10 py-4 rounded-xl text-base font-semibold hover:bg-[#F5DC00] transition" />
           <p className="text-xs text-slate-300 mt-4">신용카드 불필요 · 완전 무료</p>
         </section>
 
@@ -119,12 +106,7 @@ export default function LandingPage() {
           <div className="max-w-4xl mx-auto px-6 py-20 text-center">
             <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">지금 바로 시작하세요</h2>
             <p className="text-slate-400 mb-8">무료로 사업자 정보 페이지를 만들어보세요.</p>
-            <Link
-              href="/signup"
-              className="inline-block bg-white text-slate-900 px-10 py-4 rounded-xl text-base font-semibold hover:bg-slate-100 transition"
-            >
-              무료로 시작하기
-            </Link>
+            <KakaoLoginButton className="inline-flex items-center gap-2.5 bg-[#FEE500] text-[#191919] px-10 py-4 rounded-xl text-base font-semibold hover:bg-[#F5DC00] transition" />
           </div>
         </section>
       </main>

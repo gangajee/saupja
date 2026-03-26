@@ -81,7 +81,15 @@ const QRModal = memo(function QRModal({ url, onClose }: { url: string; onClose: 
   );
 });
 
-const KakaoShareButton = memo(function KakaoShareButton({ url }: { url: string }) {
+const KakaoShareButton = memo(function KakaoShareButton({
+  url,
+  title,
+  description,
+}: {
+  url: string;
+  title: string;
+  description: string;
+}) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -105,9 +113,19 @@ const KakaoShareButton = memo(function KakaoShareButton({ url }: { url: string }
   }, []);
 
   const handleShare = useCallback(() => {
-    const kakao = (window as unknown as { Kakao: { Share: { sendScrap: (opts: object) => void } } }).Kakao;
-    kakao.Share.sendScrap({ requestUrl: url });
-  }, [url]);
+    // sendScrap 대신 sendDefault 사용 — OG 크롤링 없이 직접 데이터 전달
+    const kakao = (window as unknown as { Kakao: { Share: { sendDefault: (opts: object) => void } } }).Kakao;
+    const imageUrl = `${window.location.origin}/api/og/${url.split("/u/")[1]?.split("?")[0]}`;
+    kakao.Share.sendDefault({
+      objectType: "feed",
+      content: {
+        title,
+        description,
+        imageUrl,
+        link: { mobileWebUrl: url, webUrl: url },
+      },
+    });
+  }, [url, title, description]);
 
   if (!ready) return null;
 
@@ -232,7 +250,11 @@ export default function ShareClient({ business: initial }: { business: Business 
       <div className="border-b border-slate-100 px-5 py-3 flex items-center justify-between">
         <span className="text-xs font-semibold text-slate-300 tracking-widest uppercase">saupja.com</span>
         <div className="flex items-center gap-2">
-          <KakaoShareButton url={pageUrl} />
+          <KakaoShareButton
+            url={pageUrl}
+            title={`${business.companyName} — 사업자 정보`}
+            description={`${business.ownerName} 대표 · saupja.com`}
+          />
           <button
             onClick={openQR}
             className="text-xs text-slate-400 hover:text-slate-700 transition flex items-center gap-1"

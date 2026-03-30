@@ -70,22 +70,24 @@ export async function GET(
                 alt="logo"
                 width={120}
                 height={120}
-                style={{ borderRadius: "16px", objectFit: "cover" }}
+                style={{ borderRadius: "20px", objectFit: "cover" }}
               />
             ) : (
               <div
                 style={{
-                  width: "80px",
-                  height: "80px",
-                  background: "#f1f5f9",
-                  borderRadius: "20px",
+                  width: "100px",
+                  height: "100px",
+                  background: "#dbeafe",
+                  borderRadius: "24px",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  fontSize: "36px",
+                  fontSize: "52px",
+                  fontWeight: 800,
+                  color: "#2563eb",
                 }}
               >
-                🏢
+                {name.charAt(0)}
               </div>
             )}
             <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "8px" }}>

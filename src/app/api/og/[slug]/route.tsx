@@ -18,110 +18,88 @@ export async function GET(
   const name = business?.companyName ?? "사업자";
   const owner = business?.ownerName ?? "";
   const rawImage = business?.profileImage;
-  const imageUrl = rawImage?.startsWith("http") ? rawImage : rawImage ? `${baseUrl}${rawImage}` : null;
-  const hasImage = !!imageUrl;
+  const imageUrl = rawImage?.startsWith("http") ? rawImage : rawImage?.startsWith("data:") ? null : rawImage ? `${baseUrl}${rawImage}` : null;
 
   return new ImageResponse(
     (
       <div
         style={{
-          width: "1200px",
-          height: "630px",
+          width: "800px",
+          height: "800px",
           display: "flex",
           flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
           background: "white",
           fontFamily: "sans-serif",
+          gap: "32px",
         }}
       >
-        {/* 좌측 콘텐츠 영역 */}
+        {/* 아바타 */}
+        {imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={imageUrl}
+            alt="logo"
+            width={180}
+            height={180}
+            style={{ borderRadius: "36px", objectFit: "cover" }}
+          />
+        ) : (
+          <div
+            style={{
+              width: "180px",
+              height: "180px",
+              background: "#dbeafe",
+              borderRadius: "36px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "96px",
+              fontWeight: 800,
+              color: "#2563eb",
+            }}
+          >
+            {name.charAt(0)}
+          </div>
+        )}
+
+        {/* 회사명 + 대표 */}
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
+          <span style={{ fontSize: "64px", fontWeight: 800, color: "#0f172a", textAlign: "center", lineHeight: 1.1 }}>
+            {name}
+          </span>
+          {owner && (
+            <span style={{ fontSize: "28px", color: "#94a3b8" }}>
+              대표 {owner}
+            </span>
+          )}
+        </div>
+
+        {/* 브랜드 */}
         <div
           style={{
-            flex: 1,
+            position: "absolute",
+            bottom: "40px",
             display: "flex",
-            flexDirection: "column",
-            justifyContent: "space-between",
-            padding: "72px 80px",
+            alignItems: "center",
+            gap: "8px",
           }}
         >
-          {/* 브랜드 */}
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <div
-              style={{
-                width: "32px",
-                height: "32px",
-                background: "#0f172a",
-                borderRadius: "8px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            />
-            <span style={{ fontSize: "18px", fontWeight: 700, color: "#0f172a" }}>
-              saupja.com
-            </span>
-          </div>
-
-          {/* 메인 */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-            {hasImage ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={imageUrl!}
-                alt="logo"
-                width={120}
-                height={120}
-                style={{ borderRadius: "20px", objectFit: "cover" }}
-              />
-            ) : (
-              <div
-                style={{
-                  width: "100px",
-                  height: "100px",
-                  background: "#dbeafe",
-                  borderRadius: "24px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "52px",
-                  fontWeight: 800,
-                  color: "#2563eb",
-                }}
-              >
-                {name.charAt(0)}
-              </div>
-            )}
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "8px" }}>
-              <span style={{ fontSize: "56px", fontWeight: 800, color: "#0f172a", lineHeight: 1.1 }}>
-                {name}
-              </span>
-              {owner && (
-                <span style={{ fontSize: "24px", color: "#94a3b8" }}>
-                  대표 {owner}
-                </span>
-              )}
-            </div>
-          </div>
-
-          {/* 하단 */}
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span
-              style={{
-                background: "#f1f5f9",
-                color: "#64748b",
-                fontSize: "14px",
-                padding: "6px 14px",
-                borderRadius: "100px",
-              }}
-            >
-              사업자 정보 확인하기
-            </span>
-          </div>
+          <div
+            style={{
+              width: "24px",
+              height: "24px",
+              background: "#0f172a",
+              borderRadius: "6px",
+            }}
+          />
+          <span style={{ fontSize: "18px", fontWeight: 700, color: "#94a3b8" }}>
+            saupja.com
+          </span>
         </div>
       </div>
     ),
-    {
-      width: 1200,
-      height: 630,
-    }
+    { width: 800, height: 800 }
   );
 }

@@ -124,6 +124,12 @@ const KakaoShareButton = memo(function KakaoShareButton({
         imageUrl,
         link: { mobileWebUrl: url, webUrl: url },
       },
+      buttons: [
+        {
+          title: "사업자 정보 확인하기",
+          link: { mobileWebUrl: url, webUrl: url },
+        },
+      ],
     });
   }, [url, title, description]);
 
@@ -253,7 +259,7 @@ export default function ShareClient({ business: initial }: { business: Business 
           <KakaoShareButton
             url={pageUrl}
             title={`${business.companyName} — 사업자 정보`}
-            description={`${business.ownerName} 대표 · saupja.com`}
+            description={`${business.ownerName} 대표 · 사업자 정보 공유`}
           />
           <button
             onClick={openQR}

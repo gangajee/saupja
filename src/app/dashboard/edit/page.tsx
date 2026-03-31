@@ -188,8 +188,9 @@ function EditForm() {
   const [loading, setLoading] = useState(false);
   const [saved, setSaved] = useState(!!id);
   const [error, setError] = useState("");
+  const [startDate, setStartDate] = useState("");
   const [verifying, setVerifying] = useState(false);
-  const [verifyResult, setVerifyResult] = useState<{ verified: boolean; message: string; taxType?: string } | null>(null);
+  const [verifyResult, setVerifyResult] = useState<{ verified: boolean; message: string } | null>(null);
   const [visibleFields, setVisibleFields] = useState<VisibleField[]>([...ALL_FIELDS]);
   const [sharePassword, setSharePassword] = useState("");
   const [initialProfileImage, setInitialProfileImage] = useState<string | null>(null);
@@ -220,6 +221,7 @@ function EditForm() {
   const onChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     setSaved(false);
+    if (e.target.name === "ownerName") setVerifyResult(null);
   }, []);
 
   const toggleField = useCallback((field: VisibleField) => {
@@ -250,9 +252,13 @@ function EditForm() {
     setFiles(newFiles);
   }, []);
 
-  // Use ref so handleVerify closure always reads fresh businessNumber without recreating itself
+  // Use refs so handleVerify closure always reads fresh values without recreating itself
   const businessNumberRef = useRef(form.businessNumber);
+  const ownerNameRef = useRef(form.ownerName);
+  const startDateRef = useRef(startDate);
   useEffect(() => { businessNumberRef.current = form.businessNumber; }, [form.businessNumber]);
+  useEffect(() => { ownerNameRef.current = form.ownerName; }, [form.ownerName]);
+  useEffect(() => { startDateRef.current = startDate; }, [startDate]);
 
   const handleVerify = useCallback(async () => {
     setVerifying(true);
@@ -260,7 +266,11 @@ function EditForm() {
     const res = await fetch("/api/verify-business", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ businessNumber: businessNumberRef.current }),
+      body: JSON.stringify({
+        businessNumber: businessNumberRef.current,
+        ownerName: ownerNameRef.current,
+        startDate: startDateRef.current,
+      }),
     });
     const data = await res.json();
     setVerifyResult(data);
@@ -273,9 +283,18 @@ function EditForm() {
     submitRef.current = { form, baseAddress, postcode, detailAddress, savedId, visibleFields, sharePassword };
   });
 
+  const verifyResultRef = useRef(verifyResult);
+  useEffect(() => { verifyResultRef.current = verifyResult; }, [verifyResult]);
+
   const handleSubmit = useCallback(async (e: React.SyntheticEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!verifyResultRef.current?.verified) {
+      setError("사업자 인증을 완료해주세요.");
+      return;
+    }
+
     setLoading(true);
 
     const { form, baseAddress, postcode, detailAddress, savedId, visibleFields, sharePassword } = submitRef.current;
@@ -345,33 +364,46 @@ function EditForm() {
                 </div>
               ))}
 
-              {/* 사업자번호 + 인증 */}
-              <div>
-                <label className="block text-xs font-medium text-slate-500 mb-1.5 uppercase tracking-wide">
-                  사업자번호 <span className="text-red-400">*</span>
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    name="businessNumber"
-                    value={form.businessNumber}
-                    onChange={(e) => { onChange(e); setVerifyResult(null); }}
-                    required
-                    className="flex-1 border border-slate-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent"
-                    placeholder="000-00-00000"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleVerify}
-                    disabled={verifying || !form.businessNumber}
-                    className="shrink-0 px-3 py-3 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 disabled:opacity-50 transition"
-                  >
-                    {verifying ? "조회 중" : "인증"}
-                  </button>
+              {/* 사업자번호 + 개업일 + 인증 */}
+              <div className="sm:col-span-2 space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-slate-500 mb-1.5 uppercase tracking-wide">
+                      사업자번호 <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      name="businessNumber"
+                      value={form.businessNumber}
+                      onChange={(e) => { onChange(e); setVerifyResult(null); }}
+                      required
+                      className="w-full border border-slate-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent"
+                      placeholder="000-00-00000"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-slate-500 mb-1.5 uppercase tracking-wide">
+                      개업일 <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => { setStartDate(e.target.value); setVerifyResult(null); }}
+                      required
+                      className="w-full border border-slate-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent"
+                    />
+                  </div>
                 </div>
+                <button
+                  type="button"
+                  onClick={handleVerify}
+                  disabled={verifying || !form.businessNumber || !form.ownerName || !startDate}
+                  className="w-full py-3 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 disabled:opacity-50 transition"
+                >
+                  {verifying ? "인증 중..." : verifyResult?.verified ? "✓ 인증 완료" : "사업자 인증"}
+                </button>
                 {verifyResult && (
-                  <p className={`mt-1.5 text-xs flex items-center gap-1 ${verifyResult.verified ? "text-green-600" : "text-red-500"}`}>
+                  <p className={`text-xs flex items-center gap-1 ${verifyResult.verified ? "text-green-600" : "text-red-500"}`}>
                     {verifyResult.verified ? "✓" : "✗"} {verifyResult.message}
-                    {verifyResult.taxType && <span className="text-slate-400 ml-1">({verifyResult.taxType})</span>}
                   </p>
                 )}
               </div>

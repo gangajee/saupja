@@ -1,15 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const STATUS: Record<string, string> = {
-  "01": "계속사업자",
-  "02": "휴업자",
-  "03": "폐업자",
-};
-
 export async function POST(req: NextRequest) {
-  const { businessNumber } = await req.json();
-  if (!businessNumber) {
-    return NextResponse.json({ error: "사업자번호를 입력해주세요." }, { status: 400 });
+  const { businessNumber, ownerName, startDate } = await req.json();
+
+  if (!businessNumber || !ownerName || !startDate) {
+    return NextResponse.json({ error: "사업자번호, 대표자명, 개업일을 모두 입력해주세요." }, { status: 400 });
   }
 
   const b_no = businessNumber.replace(/[^0-9]/g, "");
@@ -17,13 +12,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "사업자번호 10자리를 입력해주세요." }, { status: 400 });
   }
 
+  const start_dt = startDate.replace(/-/g, "");
+  if (start_dt.length !== 8) {
+    return NextResponse.json({ error: "개업일을 정확히 입력해주세요." }, { status: 400 });
+  }
+
   const apiKey = process.env.NTS_API_KEY;
-  const url = `https://api.odcloud.kr/api/nts-businessman/v1/status?serviceKey=${apiKey}`;
+  const url = `https://api.odcloud.kr/api/nts-businessman/v1/validate?serviceKey=${apiKey}`;
 
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json", Accept: "application/json" },
-    body: JSON.stringify({ b_no: [b_no] }),
+    body: JSON.stringify({
+      businesses: [{ b_no, p_nm: ownerName, start_dt }],
+    }),
   });
 
   if (!res.ok) {
@@ -33,18 +35,16 @@ export async function POST(req: NextRequest) {
   const data = await res.json();
   const item = data?.data?.[0];
 
-  if (!item || !item.b_stt_cd) {
-    return NextResponse.json({ verified: false, message: "등록되지 않은 사업자번호입니다." });
+  if (!item) {
+    return NextResponse.json({ verified: false, message: "인증 결과를 확인할 수 없습니다." });
   }
 
-  const statusLabel = STATUS[item.b_stt_cd] ?? item.b_stt ?? "알 수 없음";
-  const isActive = item.b_stt_cd === "01";
+  const verified = item.valid === "01";
 
   return NextResponse.json({
-    verified: isActive,
-    status: item.b_stt_cd,
-    statusLabel,
-    taxType: item.tax_type,
-    message: isActive ? "정상 사업자입니다." : `${statusLabel} 사업자입니다.`,
+    verified,
+    message: verified
+      ? "사업자 인증이 완료되었습니다."
+      : "사업자 정보가 일치하지 않습니다. 사업자번호, 대표자명, 개업일을 확인해주세요.",
   });
 }

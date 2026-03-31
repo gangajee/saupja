@@ -31,6 +31,10 @@ export async function POST(req: NextRequest) {
   // 사업자번호를 slug로 사용 (숫자만 추출)
   const slug = businessNumber.replace(/\D/g, "");
 
+  if (!slug) {
+    return NextResponse.json({ error: "유효한 사업자번호를 입력해주세요." }, { status: 400 });
+  }
+
   // 중복 체크
   const existing = await prisma.business.findUnique({ where: { slug } });
   if (existing) {

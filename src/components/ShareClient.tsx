@@ -85,10 +85,12 @@ const KakaoShareButton = memo(function KakaoShareButton({
   url,
   title,
   description,
+  slug,
 }: {
   url: string;
   title: string;
   description: string;
+  slug: string;
 }) {
   const [ready, setReady] = useState(false);
 
@@ -97,9 +99,10 @@ const KakaoShareButton = memo(function KakaoShareButton({
     const jsKey = process.env.NEXT_PUBLIC_KAKAO_JS_KEY;
     if (!jsKey) return;
 
-    if ((window as unknown as { Kakao?: { isInitialized?: () => boolean; init?: (key: string) => void } }).Kakao?.isInitialized?.()) {
-      setReady(true);
-      return;
+    const kakaoWindow = window as unknown as { Kakao?: { isInitialized?: () => boolean; init?: (key: string) => void } };
+    if (kakaoWindow.Kakao?.isInitialized?.()) {
+      const id = setTimeout(() => setReady(true), 0);
+      return () => clearTimeout(id);
     }
 
     const script = document.createElement("script");
@@ -113,9 +116,9 @@ const KakaoShareButton = memo(function KakaoShareButton({
   }, []);
 
   const handleShare = useCallback(() => {
-    // sendScrap 대신 sendDefault 사용 — OG 크롤링 없이 직접 데이터 전달
+    if (!url) return;
     const kakao = (window as unknown as { Kakao: { Share: { sendDefault: (opts: object) => void } } }).Kakao;
-    const imageUrl = `${window.location.origin}/api/og/${url.split("/u/")[1]?.split("?")[0]}`;
+    const imageUrl = `${window.location.origin}/api/og/${slug}`;
     kakao.Share.sendDefault({
       objectType: "feed",
       content: {
@@ -131,9 +134,9 @@ const KakaoShareButton = memo(function KakaoShareButton({
         },
       ],
     });
-  }, [url, title, description]);
+  }, [url, title, description, slug]);
 
-  if (!ready) return null;
+  if (!ready || !url) return null;
 
   return (
     <button
@@ -190,11 +193,7 @@ export default function ShareClient({ business: initial }: { business: Business 
   );
 
   const [showQR, setShowQR] = useState(false);
-  const [pageUrl, setPageUrl] = useState("");
-
-  useEffect(() => {
-    setPageUrl(window.location.href);
-  }, []);
+  const [pageUrl] = useState(() => typeof window !== "undefined" ? window.location.href : "");
 
   const [unlocked, setUnlocked] = useState(false);
   const [business, setBusiness] = useState(initial);
@@ -254,12 +253,13 @@ export default function ShareClient({ business: initial }: { business: Business 
     <div className="min-h-screen bg-white flex flex-col">
       {/* 브랜드 바 */}
       <div className="border-b border-slate-100 px-5 py-3 flex items-center justify-between">
-        <span className="text-xs font-semibold text-slate-300 tracking-widest uppercase">saupja.com</span>
+        <span className="text-xs font-semibold text-slate-300 tracking-widest uppercase">saupja.biz</span>
         <div className="flex items-center gap-2">
           <KakaoShareButton
             url={pageUrl}
             title={`${business.companyName} — 사업자 정보`}
             description={`${business.ownerName} 대표 · 사업자 정보 공유`}
+            slug={business.slug}
           />
           <button
             onClick={openQR}
@@ -428,7 +428,7 @@ export default function ShareClient({ business: initial }: { business: Business 
 
       <footer className="border-t border-slate-100 py-6 text-center">
         <p className="text-xs text-slate-300">
-          <a href="/" className="hover:text-slate-500 transition font-medium">saupja.com</a>으로 만든 사업자 정보 페이지
+          <a href="/" className="hover:text-slate-500 transition font-medium">saupja.biz</a>으로 만든 사업자 정보 페이지
         </p>
       </footer>
     </div>

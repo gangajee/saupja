@@ -10,7 +10,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
   const ogImage = `${baseUrl}/api/og/${slug}`;
   const title = `${business.companyName} — 사업자 정보`;
-  const description = `${business.ownerName} 대표 · saupja.com`;
+  const description = `${business.ownerName} 대표 · saupja.biz`;
 
   return {
     title,

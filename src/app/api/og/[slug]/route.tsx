@@ -95,7 +95,7 @@ export async function GET(
             }}
           />
           <span style={{ fontSize: "18px", fontWeight: 700, color: "#94a3b8" }}>
-            saupja.com
+            saupja.biz
           </span>
         </div>
       </div>

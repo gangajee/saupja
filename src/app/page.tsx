@@ -36,7 +36,7 @@ export default function LandingPage() {
             <div className="max-w-xs mx-auto">
               <div className="bg-white rounded-3xl border border-slate-200/80 shadow-2xl shadow-slate-200/80 overflow-hidden">
                 <div className="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-slate-300 tracking-widest uppercase">saupja.com</span>
+                  <span className="text-[10px] font-bold text-slate-300 tracking-widest uppercase">saupja.biz</span>
                   <div className="flex items-center gap-2.5">
                     <span className="text-[10px] text-slate-300">QR</span>
                     <span className="text-[10px] text-slate-300">링크 복사</span>
@@ -101,7 +101,7 @@ export default function LandingPage() {
           <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest text-center mb-12">주요 기능</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {[
-              { title: "링크 하나로 공유", desc: "saupja.com/u/홍길동전기 형태의 고유 URL로 누구에게든 바로 전달", emoji: "🔗" },
+              { title: "링크 하나로 공유", desc: "saupja.biz/u/홍길동전기 형태의 고유 URL로 누구에게든 바로 전달", emoji: "🔗" },
               { title: "파일 한 곳에", desc: "사업자 등록증, 통장 사본 등 서류를 한 번만 올려두면 끝", emoji: "📂" },
               { title: "원클릭 복사", desc: "사업자번호, 계좌번호를 버튼 한 번으로 클립보드에 복사", emoji: "⚡" },
               { title: "항상 최신 상태", desc: "파일을 교체해도 링크는 그대로 — 상대방은 항상 최신 서류 확인", emoji: "✅" },
@@ -128,7 +128,7 @@ export default function LandingPage() {
       <footer className="border-t border-slate-100 py-8">
         <div className="max-w-5xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-300">
           <span className="font-bold text-slate-400">사업자</span>
-          <span>© 2025 saupja.com · All rights reserved.</span>
+          <span>© 2025 saupja.biz · All rights reserved.</span>
         </div>
       </footer>
     </div>

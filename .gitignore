@@ -45,3 +45,6 @@ next-env.d.ts
 # 업로드된 파일
 /public/uploads/*
 !/public/uploads/.gitkeep
+
+# 서버 접속 정보 (민감한 정보 포함)
+ssh.md

@@ -37,17 +37,14 @@ export async function uploadFile(
     return `${process.env.R2_PUBLIC_URL}/${key}`;
   }
 
-  // 프로덕션에서 R2 미설정 시 base64로 DB에 저장
-  if (process.env.NODE_ENV === "production") {
-    return `data:${mimeType};base64,${buffer.toString("base64")}`;
-  }
-
-  // 로컬 개발 환경
+  // R2 미설정 시 로컬 파일 저장
   const { mkdir } = await import("fs/promises");
   const uploadDir = path.join(process.cwd(), "public/uploads");
   await mkdir(uploadDir, { recursive: true });
   await writeFile(path.join(uploadDir, key), buffer);
-  return `/uploads/${key}`;
+
+  const baseUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
+  return `${baseUrl}/uploads/${key}`;
 }
 
 export async function saveFile(file: File): Promise<string> {

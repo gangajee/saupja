@@ -12,6 +12,6 @@ git push origin main
 git checkout dev
 
 echo "2) 서버 배포 중..."
-ssh $SERVER "cd $APP_DIR && git pull origin main && npm run build && pm2 restart saupja"
+ssh $SERVER "cd $APP_DIR && git pull origin main && npm install && npm run build && pm2 restart saupja"
 
 echo "배포 완료 → https://saupja.biz"

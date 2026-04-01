@@ -23,7 +23,8 @@ export async function uploadFile(
   fileName: string,
   mimeType: string
 ): Promise<string> {
-  const key = `${Date.now()}-${fileName}`;
+  const ext = fileName.split(".").pop() ?? "bin";
+  const key = `${Date.now()}.${ext}`;
 
   if (r2) {
     await r2.send(

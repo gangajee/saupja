@@ -189,6 +189,7 @@ function EditForm() {
   const [saved, setSaved] = useState(!!id);
   const [error, setError] = useState("");
   const [startDate, setStartDate] = useState("");
+  const [ocrLoading, setOcrLoading] = useState(false);
   const [verifying, setVerifying] = useState(false);
   const [verifyResult, setVerifyResult] = useState<{ verified: boolean; message: string } | null>(null);
   const [visibleFields, setVisibleFields] = useState<VisibleField[]>([...ALL_FIELDS]);
@@ -250,6 +251,37 @@ function EditForm() {
 
   const handleFilesUpdate = useCallback((newFiles: BusinessFile[]) => {
     setFiles(newFiles);
+  }, []);
+
+  const handleOcr = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setOcrLoading(true);
+    const fd = new FormData();
+    fd.append("file", file);
+    const res = await fetch("/api/ocr-business", { method: "POST", body: fd });
+    setOcrLoading(false);
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setError(data.error ?? "사업자등록증 분석에 실패했습니다.");
+      return;
+    }
+    const data = await res.json();
+    setForm((prev) => ({
+      ...prev,
+      companyName: data.companyName || prev.companyName,
+      ownerName: data.ownerName || prev.ownerName,
+      businessNumber: data.businessNumber || prev.businessNumber,
+    }));
+    if (data.startDate) setStartDate(data.startDate);
+    if (data.address) {
+      setBaseAddress(data.address);
+      setPostcode("");
+      setDetailAddress("");
+    }
+    setVerifyResult(null);
+    setSaved(false);
+    e.target.value = "";
   }, []);
 
   // Use refs so handleVerify closure always reads fresh values without recreating itself
@@ -339,6 +371,31 @@ function EditForm() {
 
       <main className="max-w-2xl mx-auto px-5 py-5 pb-12 space-y-4">
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* 사업자등록증 OCR */}
+          <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5">
+            <p className="text-xs font-semibold text-blue-400 uppercase tracking-widest mb-1">자동 입력</p>
+            <p className="text-xs text-blue-400 mb-3">사업자등록증을 업로드하면 정보가 자동으로 채워집니다.</p>
+            <label className={`flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold border-2 border-dashed border-blue-200 text-blue-500 hover:bg-blue-100 transition cursor-pointer ${ocrLoading ? "opacity-50 pointer-events-none" : ""}`}>
+              {ocrLoading ? (
+                <>
+                  <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                  </svg>
+                  분석 중...
+                </>
+              ) : (
+                <>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                  </svg>
+                  사업자등록증 업로드
+                </>
+              )}
+              <input type="file" accept="image/*,.pdf" className="hidden" onChange={handleOcr} disabled={ocrLoading} />
+            </label>
+          </div>
+
           {/* 기본 정보 */}
           <div className="bg-white rounded-2xl border border-slate-100 p-5 space-y-4">
             <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">기본 정보</p>

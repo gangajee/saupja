@@ -69,26 +69,30 @@ export async function POST(req: NextRequest) {
     startDate = `${dateMatch1[1]}-${dateMatch1[2].padStart(2, "0")}-${dateMatch1[3].padStart(2, "0")}`;
   }
 
-  // 상호명: "상호" 다음 텍스트
-  let companyName = "";
+  // 알려진 레이블 키워드 (다음 레이블 나오면 수집 종료)
+  const LABEL_KEYWORDS = ["상호", "법인명", "성명", "대표자", "소재지", "등록번호", "개업", "사업의종류", "업태", "종목"];
+
+  // 레이블 idx 이후 ~ 다음 레이블 전까지 값을 모아 반환
+  function collectValue(idx: number): string {
+    const parts: string[] = [];
+    for (let i = idx + 1; i < fields.length; i++) {
+      const v = fields[i].trim();
+      if (!v || v === ":" || v === ".") continue;
+      if (LABEL_KEYWORDS.some((k) => v.includes(k))) break;
+      parts.push(v);
+      // 대표자명·소재지는 첫 값만
+      if (idx === ownerIdx || idx === addrIdx) break;
+    }
+    return parts.join(" ").trim();
+  }
+
   const companyIdx = fields.findIndex((f) => f.includes("상호") || f.includes("법인명"));
-  if (companyIdx !== -1 && fields[companyIdx + 1]) {
-    companyName = fields[companyIdx + 1].trim();
-  }
-
-  // 대표자명: "성명" 또는 "대표자" 다음 텍스트
-  let ownerName = "";
   const ownerIdx = fields.findIndex((f) => f.includes("성명") || f.includes("대표자"));
-  if (ownerIdx !== -1 && fields[ownerIdx + 1]) {
-    ownerName = fields[ownerIdx + 1].trim();
-  }
-
-  // 사업장 소재지: "소재지" 다음 텍스트
-  let address = "";
   const addrIdx = fields.findIndex((f) => f.includes("소재지"));
-  if (addrIdx !== -1 && fields[addrIdx + 1]) {
-    address = fields[addrIdx + 1].trim();
-  }
+
+  const companyName = companyIdx !== -1 ? collectValue(companyIdx) : "";
+  const ownerName   = ownerIdx   !== -1 ? collectValue(ownerIdx)   : "";
+  const address     = addrIdx    !== -1 ? collectValue(addrIdx)    : "";
 
   return NextResponse.json({ companyName, ownerName, businessNumber, startDate, address });
 }

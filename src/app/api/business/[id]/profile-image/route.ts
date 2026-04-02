@@ -3,11 +3,6 @@ import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { uploadFile } from "@/lib/storage";
 
-const isR2Configured =
-  !!process.env.R2_ACCOUNT_ID &&
-  !!process.env.R2_ACCESS_KEY_ID &&
-  !!process.env.R2_SECRET_ACCESS_KEY;
-
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -30,15 +25,8 @@ export async function POST(
     return NextResponse.json({ error: "2MB 이하 파일만 업로드 가능합니다." }, { status: 400 });
   }
 
-  let url: string;
   const buffer = Buffer.from(await file.arrayBuffer());
-
-  if (isR2Configured) {
-    url = await uploadFile(buffer, file.name, file.type);
-  } else {
-    // R2 미설정 시 base64로 DB에 직접 저장
-    url = `data:${file.type};base64,${buffer.toString("base64")}`;
-  }
+  const url = await uploadFile(buffer, file.name, file.type);
 
   await prisma.business.update({
     where: { id },

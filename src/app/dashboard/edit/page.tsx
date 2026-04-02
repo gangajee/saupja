@@ -190,6 +190,7 @@ function EditForm() {
   const [error, setError] = useState("");
   const [startDate, setStartDate] = useState("");
   const [ocrLoading, setOcrLoading] = useState(false);
+  const pendingOcrFileRef = useRef<File | null>(null);
   const [verifying, setVerifying] = useState(false);
   const [verifyResult, setVerifyResult] = useState<{ verified: boolean; message: string } | null>(null);
   const [visibleFields, setVisibleFields] = useState<VisibleField[]>([...ALL_FIELDS]);

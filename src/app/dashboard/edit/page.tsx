@@ -428,7 +428,7 @@ function EditForm() {
       </header>
 
       <main className="max-w-2xl mx-auto px-5 py-5 pb-12 space-y-4">
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form id="edit-form" onSubmit={handleSubmit} className="space-y-4">
           {/* 사업자등록증 OCR */}
           <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5">
             <p className="text-xs font-semibold text-blue-400 uppercase tracking-widest mb-1">자동 입력</p>
@@ -554,29 +554,20 @@ function EditForm() {
             onPasswordChange={handlePasswordChange}
           />
 
-          {error && <p className="text-red-500 text-sm px-1">{error}</p>}
-
-          <div className="flex gap-2">
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 bg-slate-900 text-white py-3 rounded-xl text-sm font-semibold hover:bg-slate-700 disabled:opacity-50 transition"
-            >
-              {loading ? "저장 중..." : saved ? "저장됨 ✓" : pendingFiles.length > 0 ? `저장 (파일 ${pendingFiles.length}개 포함)` : "저장"}
-            </button>
-            <Link href="/dashboard" className="flex-1 text-center bg-slate-100 text-slate-600 py-3 rounded-xl text-sm font-semibold">
-              {saved ? "완료" : "취소"}
-            </Link>
-          </div>
         </form>
 
-        {/* 대표 이미지 — memoized, owns upload state independently */}
-        {savedId && (
+        {/* 대표 이미지 */}
+        {savedId ? (
           <ProfileImageSection
             savedId={savedId}
             companyName={form.companyName}
             initialImage={initialProfileImage}
           />
+        ) : (
+          <div className="bg-white rounded-2xl border border-slate-100 p-5 opacity-40 pointer-events-none">
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">대표 이미지</p>
+            <p className="text-xs text-slate-400">저장 후 이미지 업로드 가능합니다.</p>
+          </div>
         )}
 
         {/* 파일 업로드 */}
@@ -656,6 +647,22 @@ function EditForm() {
               파일 추가 (PDF, JPG, PNG)
             </label>
           </div>
+        </div>
+
+        {/* 에러 + 저장 버튼 — 항상 맨 아래 */}
+        {error && <p className="text-red-500 text-sm px-1">{error}</p>}
+        <div className="flex gap-2 pb-4">
+          <button
+            type="submit"
+            form="edit-form"
+            disabled={loading}
+            className="flex-1 bg-slate-900 text-white py-3 rounded-xl text-sm font-semibold hover:bg-slate-700 disabled:opacity-50 transition"
+          >
+            {loading ? "저장 중..." : saved ? "저장됨 ✓" : pendingFiles.length > 0 ? `저장 (파일 ${pendingFiles.length}개 포함)` : "저장"}
+          </button>
+          <Link href="/dashboard" className="flex-1 text-center bg-slate-100 text-slate-600 py-3 rounded-xl text-sm font-semibold">
+            {saved ? "완료" : "취소"}
+          </Link>
         </div>
 
       </main>

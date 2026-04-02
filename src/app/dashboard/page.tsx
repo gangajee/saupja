@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
@@ -7,28 +9,15 @@ import DeleteBusinessButton from "@/components/DeleteBusinessButton";
 import BusinessAvatar from "@/components/BusinessAvatar";
 
 export default async function DashboardPage() {
-  let session;
-  try {
-    session = await getSession();
-  } catch (err) {
-    console.error("[dashboard] getSession failed:", err);
-    return <div style={{padding:"2rem",color:"red"}}>세션 오류: {String(err)}</div>;
-  }
-
+  const session = await getSession();
   const userId = (session?.user as { id?: string })?.id;
   if (!userId) redirect("/login");
 
-  let businesses;
-  try {
-    businesses = await prisma.business.findMany({
-      where: { userId },
-      include: { files: { select: { id: true } } },
-      orderBy: { createdAt: "desc" },
-    });
-  } catch (err) {
-    console.error("[dashboard] prisma.business.findMany failed:", err);
-    return <div style={{padding:"2rem",color:"red"}}>DB 오류: {String(err)}</div>;
-  }
+  const businesses = await prisma.business.findMany({
+    where: { userId },
+    include: { files: { select: { id: true } } },
+    orderBy: { createdAt: "desc" },
+  });
 
   return (
     <div className="min-h-screen bg-zinc-50">

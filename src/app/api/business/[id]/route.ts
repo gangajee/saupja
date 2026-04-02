@@ -33,23 +33,27 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const updated = await prisma.business.update({
-    where: { id },
-    data: {
-      companyName: data.companyName,
-      ownerName: data.ownerName,
-      businessNumber: data.businessNumber,
-      address: data.address,
-      phone: data.phone,
-      bankName: data.bankName,
-      accountNumber: data.accountNumber,
-      website: data.website || null,
-      visibleFields: data.visibleFields ? JSON.stringify(data.visibleFields) : business.visibleFields,
-      sharePassword: data.sharePassword ?? business.sharePassword,
-    },
-  });
-
-  return NextResponse.json(updated);
+  try {
+    const updated = await prisma.business.update({
+      where: { id },
+      data: {
+        companyName: data.companyName,
+        ownerName: data.ownerName,
+        businessNumber: data.businessNumber,
+        address: data.address,
+        phone: data.phone,
+        bankName: data.bankName,
+        accountNumber: data.accountNumber,
+        website: data.website || null,
+        visibleFields: data.visibleFields ? JSON.stringify(data.visibleFields) : business.visibleFields,
+        sharePassword: data.sharePassword ?? business.sharePassword,
+      },
+    });
+    return NextResponse.json(updated);
+  } catch (err) {
+    console.error("[PUT /api/business/:id]", err);
+    return NextResponse.json({ error: "저장에 실패했습니다." }, { status: 500 });
+  }
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

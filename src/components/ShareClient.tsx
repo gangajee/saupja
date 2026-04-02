@@ -115,8 +115,15 @@ const KakaoShareButton = memo(function KakaoShareButton({
     document.head.appendChild(script);
   }, []);
 
-  const handleShare = useCallback(() => {
+  const handleShare = useCallback(async () => {
     if (!url) return;
+    const shareUrl = `https://saupja.biz/u/${slug}`;
+    // 모바일: 네이티브 공유 시트 (카카오톡 포함)
+    if (navigator.share) {
+      await navigator.share({ title, text: description, url: shareUrl });
+      return;
+    }
+    // PC 폴백: Kakao SDK
     const kakao = (window as unknown as { Kakao: { Share: { sendDefault: (opts: object) => void } } }).Kakao;
     kakao.Share.sendDefault({
       objectType: "feed",
@@ -124,14 +131,9 @@ const KakaoShareButton = memo(function KakaoShareButton({
         title,
         description,
         imageUrl: `https://saupja.biz/api/og/${slug}?v=2`,
-        link: { mobileWebUrl: `https://saupja.biz/u/${slug}`, webUrl: `https://saupja.biz/u/${slug}` },
+        link: { mobileWebUrl: shareUrl, webUrl: shareUrl },
       },
-      buttons: [
-        {
-          title: "사업자 정보 확인하기",
-          link: { mobileWebUrl: `https://saupja.biz/u/${slug}`, webUrl: `https://saupja.biz/u/${slug}` },
-        },
-      ],
+      buttons: [{ title: "사업자 정보 확인하기", link: { mobileWebUrl: shareUrl, webUrl: shareUrl } }],
     });
   }, [url, title, description, slug]);
 

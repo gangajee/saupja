@@ -39,6 +39,7 @@ type Business = {
   phone: string | null;
   bankName: string | null;
   accountNumber: string | null;
+  website: string | null;
   profileImage: string | null;
   visibleFields: string | null;
   sharePassword: string | null;
@@ -371,6 +372,19 @@ export default function ShareClient({ business: initial }: { business: Business 
               copyValue={business.accountNumber}
               visible={isVisible("account")}
             />
+          )}
+          {business.website && (
+            <div className="flex items-center justify-between px-5 py-4 gap-4">
+              <span className="text-xs text-slate-400 shrink-0 w-20">홈페이지</span>
+              <a
+                href={business.website.startsWith("http") ? business.website : `https://${business.website}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm font-medium text-slate-700 hover:text-slate-900 underline underline-offset-2 truncate text-right"
+              >
+                {business.website.replace(/^https?:\/\//, "")}
+              </a>
+            </div>
           )}
         </div>
 

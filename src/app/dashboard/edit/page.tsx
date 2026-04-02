@@ -24,6 +24,7 @@ type FormData = {
   phone: string;
   bankName: string;
   accountNumber: string;
+  website: string;
 };
 
 const INITIAL: FormData = {
@@ -34,6 +35,7 @@ const INITIAL: FormData = {
   phone: "",
   bankName: "",
   accountNumber: "",
+  website: "",
 };
 
 const FILE_TYPES = [
@@ -515,6 +517,10 @@ function EditForm() {
               <div>
                 <label className={labelCls}>계좌번호</label>
                 <input name="accountNumber" value={form.accountNumber} onChange={onChange} className={inputCls} placeholder="000-0000-0000-00" />
+              </div>
+              <div>
+                <label className={labelCls}>홈페이지</label>
+                <input name="website" value={form.website} onChange={onChange} className={inputCls} placeholder="https://example.com" />
               </div>
             </div>
           </div>

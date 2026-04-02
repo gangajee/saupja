@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const data = await req.json();
-  const { companyName, ownerName, businessNumber, address, phone, bankName, accountNumber, visibleFields, sharePassword } = data;
+  const { companyName, ownerName, businessNumber, address, phone, bankName, accountNumber, website, visibleFields, sharePassword } = data;
 
   if (!companyName || !ownerName || !businessNumber) {
     return NextResponse.json({ error: "필수 항목을 입력해주세요." }, { status: 400 });
@@ -52,6 +52,7 @@ export async function POST(req: NextRequest) {
       phone,
       bankName,
       accountNumber,
+      website: website || null,
       visibleFields: visibleFields ? JSON.stringify(visibleFields) : JSON.stringify(["ownerName", "phone", "address", "account", "files"]),
       sharePassword: sharePassword || null,
     },

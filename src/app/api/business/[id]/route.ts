@@ -43,6 +43,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       phone: data.phone,
       bankName: data.bankName,
       accountNumber: data.accountNumber,
+      website: data.website || null,
       visibleFields: data.visibleFields ? JSON.stringify(data.visibleFields) : business.visibleFields,
       sharePassword: data.sharePassword ?? business.sharePassword,
     },

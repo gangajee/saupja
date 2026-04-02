@@ -1,7 +1,6 @@
 "use client";
 
 import { memo, useCallback, useState } from "react";
-import Image from "next/image";
 
 type Props = {
   src: string;
@@ -21,10 +20,10 @@ const ImagePreview = memo(function ImagePreview({ src, alt, fileName, downloadUr
   return (
     <>
       <div
-        className="relative aspect-square bg-slate-100 rounded-lg overflow-hidden cursor-zoom-in"
+        className="aspect-square bg-slate-100 rounded-lg overflow-hidden cursor-zoom-in relative"
         onClick={open}
       >
-        <Image src={src} alt={alt} fill className="object-cover" unoptimized />
+        <img src={src} alt={alt} className="w-full h-full object-cover" />
         <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition" />
       </div>
 

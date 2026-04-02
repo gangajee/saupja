@@ -115,15 +115,9 @@ const KakaoShareButton = memo(function KakaoShareButton({
     document.head.appendChild(script);
   }, []);
 
-  const handleShare = useCallback(async () => {
+  const handleShare = useCallback(() => {
     if (!url) return;
     const shareUrl = `https://saupja.biz/u/${slug}`;
-    // 모바일: 네이티브 공유 시트 (카카오톡 포함)
-    if (navigator.share) {
-      await navigator.share({ title, text: description, url: shareUrl });
-      return;
-    }
-    // PC 폴백: Kakao SDK
     const kakao = (window as unknown as { Kakao: { Share: { sendDefault: (opts: object) => void } } }).Kakao;
     kakao.Share.sendDefault({
       objectType: "feed",

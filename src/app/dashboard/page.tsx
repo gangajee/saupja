@@ -15,6 +15,9 @@ export default async function DashboardPage() {
     where: { userId },
     include: { files: { select: { id: true } } },
     orderBy: { createdAt: "desc" },
+  }).catch((err) => {
+    console.error("[dashboard] prisma.business.findMany failed:", err);
+    throw err;
   });
 
   return (

@@ -3,9 +3,9 @@
 import { memo, useCallback, useEffect, useRef, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import FileUploader from "@/components/FileUploader";
 import PostcodeSearch from "@/components/PostcodeSearch";
 import BusinessAvatar from "@/components/BusinessAvatar";
+import { formatFileSize } from "@/lib/utils";
 
 type BusinessFile = {
   id: string;
@@ -35,6 +35,14 @@ const INITIAL: FormData = {
   bankName: "",
   accountNumber: "",
 };
+
+const FILE_TYPES = [
+  { value: "registration", label: "사업자 등록증" },
+  { value: "bankbook", label: "통장 사본" },
+  { value: "other", label: "기타 서류" },
+] as const;
+
+type PendingFile = { file: File; type: string; label: string };
 
 const ALL_FIELDS = ["ownerName", "phone", "address", "account", "files"] as const;
 type VisibleField = (typeof ALL_FIELDS)[number];
@@ -191,6 +199,11 @@ function EditForm() {
   const [startDate, setStartDate] = useState("");
   const [ocrLoading, setOcrLoading] = useState(false);
   const pendingOcrFileRef = useRef<File | null>(null);
+  const [pendingFiles, setPendingFiles] = useState<PendingFile[]>([]);
+  const [pendingFileType, setPendingFileType] = useState<string>("registration");
+  const [pendingFileLabel, setPendingFileLabel] = useState("");
+  const pendingFilesRef = useRef<PendingFile[]>([]);
+  const pendingFileInputRef = useRef<HTMLInputElement>(null);
   const [verifying, setVerifying] = useState(false);
   const [verifyResult, setVerifyResult] = useState<{ verified: boolean; message: string } | null>(null);
   const [visibleFields, setVisibleFields] = useState<VisibleField[]>([...ALL_FIELDS]);
@@ -248,9 +261,6 @@ function EditForm() {
     setSaved(false);
   }, []);
 
-  const handleFilesUpdate = useCallback((newFiles: BusinessFile[]) => {
-    setFiles(newFiles);
-  }, []);
 
   const handleOcr = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -280,7 +290,38 @@ function EditForm() {
     }
     setVerifyResult(null);
     setSaved(false);
+    // OCR 파일을 첨부 대기 목록에 자동 추가 (사업자 등록증)
+    setPendingFiles((prev) => [
+      ...prev.filter((p) => p.type !== "registration"),
+      { file, type: "registration", label: "사업자 등록증" },
+    ]);
     e.target.value = "";
+  }, []);
+
+  // Sync pendingFiles ref
+  useEffect(() => { pendingFilesRef.current = pendingFiles; }, [pendingFiles]);
+
+  const handleAddPendingFile = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const label =
+      pendingFileType === "other"
+        ? pendingFileLabel || "기타 서류"
+        : FILE_TYPES.find((t) => t.value === pendingFileType)?.label ?? pendingFileType;
+    setPendingFiles((prev) => [...prev, { file, type: pendingFileType, label }]);
+    if (pendingFileInputRef.current) pendingFileInputRef.current.value = "";
+  }, [pendingFileType, pendingFileLabel]);
+
+  const removePendingFile = useCallback((idx: number) => {
+    setPendingFiles((prev) => prev.filter((_, i) => i !== idx));
+  }, []);
+
+  const handlePendingTypeChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    setPendingFileType(e.target.value);
+  }, []);
+
+  const handlePendingLabelChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setPendingFileLabel(e.target.value);
   }, []);
 
   // Use refs so handleVerify closure always reads fresh values without recreating itself
@@ -351,8 +392,26 @@ function EditForm() {
     }
 
     const data = await res.json();
-    setSavedId(data.id);
+    const bizId: string = data.id ?? submitRef.current.savedId ?? "";
+    setSavedId(bizId);
     setSaved(true);
+
+    // 대기 중인 파일들 일괄 업로드
+    const toUpload = pendingFilesRef.current;
+    if (toUpload.length > 0 && bizId) {
+      for (const pf of toUpload) {
+        const fd = new FormData();
+        fd.append("file", pf.file);
+        fd.append("type", pf.type);
+        fd.append("label", pf.label);
+        const fileRes = await fetch(`/api/business/${bizId}/files`, { method: "POST", body: fd });
+        if (fileRes.ok) {
+          const newFile = await fileRes.json();
+          setFiles((prev) => [...prev, newFile]);
+        }
+      }
+      setPendingFiles([]);
+    }
   }, []);
 
   return (
@@ -503,7 +562,7 @@ function EditForm() {
               disabled={loading}
               className="flex-1 bg-slate-900 text-white py-3 rounded-xl text-sm font-semibold hover:bg-slate-700 disabled:opacity-50 transition"
             >
-              {loading ? "저장 중..." : saved ? "저장됨 ✓" : "저장"}
+              {loading ? "저장 중..." : saved ? "저장됨 ✓" : pendingFiles.length > 0 ? `저장 (파일 ${pendingFiles.length}개 포함)` : "저장"}
             </button>
             <Link href="/dashboard" className="flex-1 text-center bg-slate-100 text-slate-600 py-3 rounded-xl text-sm font-semibold">
               {saved ? "완료" : "취소"}
@@ -521,15 +580,84 @@ function EditForm() {
         )}
 
         {/* 파일 업로드 */}
-        {savedId ? (
-          <div className="bg-white rounded-2xl border border-slate-100 p-5">
-            <FileUploader businessId={savedId} files={files} onUpdate={handleFilesUpdate} />
+        <div className="bg-white rounded-2xl border border-slate-100 p-5 space-y-4">
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">첨부 서류</p>
+
+          {/* 저장된 파일 목록 */}
+          {files.length > 0 && (
+            <div className="space-y-2">
+              {files.map((file) => (
+                <div key={file.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-slate-700 truncate">{file.label}</p>
+                    <p className="text-xs text-slate-400 truncate">{file.fileName} · {formatFileSize(file.fileSize)}</p>
+                  </div>
+                  {savedId && (
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        if (!confirm("파일을 삭제할까요?")) return;
+                        const res = await fetch(`/api/business/${savedId}/files/${file.id}`, { method: "DELETE" });
+                        if (res.ok) setFiles((prev) => prev.filter((f) => f.id !== file.id));
+                      }}
+                      className="text-red-400 text-sm shrink-0 px-2"
+                    >삭제</button>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* 대기 중인 파일 (저장 시 함께 업로드됨) */}
+          {pendingFiles.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs text-blue-500 font-medium">저장 시 자동 업로드 ({pendingFiles.length}개)</p>
+              {pendingFiles.map((pf, i) => (
+                <div key={i} className="flex items-center justify-between p-3 bg-blue-50 border border-blue-100 rounded-xl gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-slate-700 truncate">{pf.label}</p>
+                    <p className="text-xs text-slate-400 truncate">{pf.file.name} · {formatFileSize(pf.file.size)}</p>
+                  </div>
+                  <button type="button" onClick={() => removePendingFile(i)} className="text-red-400 text-sm shrink-0 px-2">삭제</button>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* 파일 추가 */}
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <select
+                value={pendingFileType}
+                onChange={handlePendingTypeChange}
+                className="flex-1 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 bg-white"
+              >
+                {FILE_TYPES.map((t) => (
+                  <option key={t.value} value={t.value}>{t.label}</option>
+                ))}
+              </select>
+            </div>
+            {pendingFileType === "other" && (
+              <input
+                value={pendingFileLabel}
+                onChange={handlePendingLabelChange}
+                placeholder="서류 이름 입력"
+                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900"
+              />
+            )}
+            <input ref={pendingFileInputRef} type="file" accept=".pdf,.jpg,.jpeg,.png,image/*" className="hidden" id="pending-file-input" onChange={handleAddPendingFile} />
+            <label
+              htmlFor="pending-file-input"
+              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-dashed border-slate-300 text-slate-500 text-sm font-medium cursor-pointer hover:bg-slate-50 transition"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+              </svg>
+              파일 추가 (PDF, JPG, PNG)
+            </label>
           </div>
-        ) : (
-          <div className="bg-white rounded-2xl border border-slate-100 p-5 opacity-40 pointer-events-none text-center text-sm text-slate-400">
-            기본 정보를 먼저 저장하면 파일을 첨부할 수 있습니다.
-          </div>
-        )}
+        </div>
+
       </main>
     </div>
   );

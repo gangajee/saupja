@@ -1,27 +1,10 @@
-import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-export default withAuth(
-  function middleware(req) {
-    const { pathname } = req.nextUrl;
-    const isLoggedIn = !!req.nextauth.token;
-
-    if ((pathname === "/login" || pathname === "/signup") && isLoggedIn) {
-      return NextResponse.redirect(new URL("/dashboard", req.url));
-    }
-  },
-  {
-    callbacks: {
-      authorized({ token }) {
-        return !!token;
-      },
-    },
-    pages: {
-      signIn: "/login",
-    },
-  }
-);
+export function middleware(req: NextRequest) {
+  return NextResponse.next();
+}
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login"],
+  matcher: [],
 };

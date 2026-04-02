@@ -64,17 +64,8 @@ export const authOptions: NextAuthOptions = {
       }
       return true;
     },
-    async jwt({ token, user, account }) {
+    async jwt({ token, user }) {
       if (user?.id) token.id = user.id;
-
-      // 카카오 로그인 시 Account에서 userId 조회
-      if (account?.provider === "kakao") {
-        const acc = await prisma.account.findUnique({
-          where: { provider_providerAccountId: { provider: "kakao", providerAccountId: account.providerAccountId } },
-        });
-        if (acc) token.id = acc.userId;
-      }
-
       return token;
     },
     session({ session, token }) {

@@ -4,7 +4,10 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ["@prisma/client"],
   images: {
     remotePatterns: [
-      { protocol: "https", hostname: "**" },
+      { protocol: "https", hostname: "*.kakaocdn.net" },
+      { protocol: "https", hostname: "*.kakao.com" },
+      { protocol: "https", hostname: "saupja.biz" },
+      { protocol: "http", hostname: "localhost" },
     ],
   },
 };

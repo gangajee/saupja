@@ -199,23 +199,21 @@ function EditForm() {
 
   useEffect(() => {
     if (!id) return;
-    fetch(`/api/business`)
+    fetch(`/api/business/${id}`)
       .then((r) => r.json())
-      .then((list) => {
-        const found = list.find((b: { id: string }) => b.id === id);
-        if (found) {
-          setForm(found);
-          setFiles(found.files ?? []);
-          const parsed = splitAddress(found.address ?? "");
-          setPostcode(parsed.postcode);
-          setBaseAddress(parsed.base);
-          setDetailAddress(parsed.detail);
-          if (found.visibleFields) {
-            try { setVisibleFields(JSON.parse(found.visibleFields)); } catch { /* ignore */ }
-          }
-          if (found.sharePassword) setSharePassword(found.sharePassword);
-          setInitialProfileImage(found.profileImage ?? null);
+      .then((found) => {
+        if (!found || found.error) return;
+        setForm(found);
+        setFiles(found.files ?? []);
+        const parsed = splitAddress(found.address ?? "");
+        setPostcode(parsed.postcode);
+        setBaseAddress(parsed.base);
+        setDetailAddress(parsed.detail);
+        if (found.visibleFields) {
+          try { setVisibleFields(JSON.parse(found.visibleFields)); } catch { /* ignore */ }
         }
+        if (found.sharePassword) setSharePassword(found.sharePassword);
+        setInitialProfileImage(found.profileImage ?? null);
       });
   }, [id]);
 

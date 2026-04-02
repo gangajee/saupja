@@ -20,7 +20,7 @@ export async function GET(
   const rawImage = business?.profileImage;
   const imageUrl = rawImage?.startsWith("http") ? rawImage : rawImage?.startsWith("data:") ? null : rawImage ? `${baseUrl}${rawImage}` : null;
 
-  return new ImageResponse(
+  const res = new ImageResponse(
     (
       <div
         style={{
@@ -102,4 +102,6 @@ export async function GET(
     ),
     { width: 800, height: 800 }
   );
+  res.headers.set("Cache-Control", "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400");
+  return res;
 }

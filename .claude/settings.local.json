@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(bash deploy.sh)",
+      "Bash(ssh -o ConnectTimeout=10 root@172.234.90.35 \"pm2 logs saupja --lines 20 --nostream 2>&1 | grep -i ''upload\\\\|image\\\\|file\\\\|error\\\\|ENOENT\\\\|permission\\\\|storage\\\\|R2\\\\|s3''\")",
+      "Bash(ssh -o ConnectTimeout=10 root@172.234.90.35 \"pm2 logs saupja --lines 50 --nostream 2>&1 | grep -A 10 ''PrismaClientKnownRequestError''\")",
+      "Bash(npm list:*)"
+    ]
+  }
+}

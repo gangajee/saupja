@@ -1,72 +1,77 @@
 import KakaoLoginButton from "@/components/KakaoLoginButton";
+import Link from "next/link";
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen flex flex-col bg-white">
       {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-100/80">
-        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center">
-          <span className="font-bold text-slate-900 tracking-tight text-lg">사업자</span>
+      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-zinc-100">
+        <div className="max-w-5xl mx-auto px-6 h-14 flex items-center justify-between">
+          <span className="font-bold text-zinc-900 tracking-tight text-sm">사업자도큐</span>
+          <KakaoLoginButton className="flex items-center gap-2 bg-[#FEE500] text-zinc-900 px-4 py-1.5 rounded-lg text-xs font-bold hover:bg-[#F5DC00] transition" />
         </div>
       </header>
 
       <main className="flex-1">
         {/* Hero */}
-        <section className="relative overflow-hidden bg-linear-to-b from-slate-50/80 to-white">
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-150 h-75 bg-blue-100/30 rounded-full blur-3xl pointer-events-none" />
-
-          <div className="relative max-w-5xl mx-auto px-6 pt-16 pb-16">
-            <div className="text-center mb-14">
-              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 bg-blue-50 border border-blue-100 px-3 py-1.5 rounded-full mb-7">
-                <span className="w-1.5 h-1.5 bg-blue-500 rounded-full inline-block" />
-                사업자 정보 공유 서비스
-              </span>
-              <h1 className="text-5xl sm:text-6xl font-bold text-slate-900 tracking-tight leading-[1.1] mb-5">
-                사업자 서류,<br />
-                <span className="text-slate-300">링크 하나로 끝</span>
-              </h1>
-              <p className="text-base text-slate-400 max-w-xs mx-auto leading-relaxed mb-10">
-                등록증·통장사본·계좌번호를<br />URL 하나로 거래처에 바로 공유
-              </p>
-              <KakaoLoginButton className="inline-flex items-center gap-2.5 bg-[#FEE500] text-[#191919] px-8 py-3.5 rounded-xl text-sm font-bold hover:bg-[#F5DC00] transition shadow-sm shadow-yellow-200" />
-              <p className="text-xs text-slate-300 mt-3">무료 · 카드 불필요</p>
-            </div>
-
-            {/* Product mockup */}
-            <div className="max-w-xs mx-auto">
-              <div className="bg-white rounded-3xl border border-slate-200/80 shadow-2xl shadow-slate-200/80 overflow-hidden">
-                <div className="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-slate-300 tracking-widest uppercase">saupja.biz</span>
-                  <div className="flex items-center gap-2.5">
-                    <span className="text-[10px] text-slate-300">QR</span>
-                    <span className="text-[10px] text-slate-300">링크 복사</span>
-                  </div>
+        <section className="bg-white border-b border-zinc-100">
+          <div className="max-w-5xl mx-auto px-6 pt-20 pb-20">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+              <div>
+                <div className="inline-flex items-center gap-2 text-xs font-semibold text-zinc-500 border border-zinc-200 bg-zinc-50 px-3 py-1.5 rounded-full mb-8">
+                  <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full" />
+                  무료 · 카드 불필요
                 </div>
-                <div className="px-5 pt-5 pb-4 flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-blue-100 flex items-center justify-center shrink-0 font-bold text-blue-600 text-base">
-                    홍
-                  </div>
-                  <div>
-                    <p className="text-[9px] text-slate-300 font-semibold uppercase tracking-widest mb-0.5">사업자 정보</p>
-                    <p className="text-base font-bold text-slate-900">홍길동 전기</p>
-                    <p className="text-xs text-slate-400">홍길동 대표</p>
-                  </div>
+                <h1 className="text-4xl sm:text-5xl font-bold text-zinc-900 tracking-tight leading-[1.1] mb-5">
+                  사업자 서류,<br />
+                  링크 하나로 끝
+                </h1>
+                <p className="text-base text-zinc-500 leading-relaxed mb-8 max-w-sm">
+                  사업자등록증·통장사본·계좌번호를
+                  URL 하나로 거래처에 바로 공유하세요.
+                </p>
+                <div className="flex flex-col items-start gap-3">
+                  <KakaoLoginButton className="inline-flex items-center gap-2.5 bg-[#FEE500] text-zinc-900 px-7 py-3 rounded-xl text-sm font-bold hover:bg-[#F5DC00] transition shadow-sm" />
+                  <p className="text-xs text-zinc-400">회원가입 없이 카카오로 즉시 시작</p>
                 </div>
-                <div className="mx-4 mb-3 border border-slate-100 rounded-2xl divide-y divide-slate-50 overflow-hidden">
-                  {[
-                    { label: "사업자번호", value: "123-45-67890" },
-                    { label: "계좌번호", value: "국민 123456-78-9012" },
-                    { label: "전화번호", value: "02-1234-5678" },
-                  ].map((row) => (
-                    <div key={row.label} className="flex items-center justify-between px-4 py-3">
-                      <span className="text-[10px] text-slate-400 w-16 shrink-0">{row.label}</span>
-                      <span className="text-xs font-semibold text-slate-700">{row.value}</span>
+              </div>
+
+              {/* Product mockup */}
+              <div className="flex justify-center lg:justify-end">
+                <div className="w-72 bg-white rounded-3xl border border-zinc-200 shadow-xl shadow-zinc-100 overflow-hidden">
+                  <div className="px-5 py-3 border-b border-zinc-100 flex items-center justify-between bg-zinc-50">
+                    <span className="text-[10px] font-bold text-zinc-400 tracking-widest uppercase">saupja.biz</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-zinc-400 bg-white border border-zinc-200 px-2 py-0.5 rounded-md">QR</span>
+                      <span className="text-[10px] text-zinc-400 bg-white border border-zinc-200 px-2 py-0.5 rounded-md">링크 복사</span>
                     </div>
-                  ))}
-                </div>
-                <div className="mx-4 mb-4">
-                  <div className="bg-slate-900 rounded-xl py-3 text-center">
-                    <span className="text-xs font-semibold text-white">전체 서류 다운로드</span>
+                  </div>
+                  <div className="px-5 pt-5 pb-4 flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-2xl bg-indigo-50 flex items-center justify-center shrink-0 font-bold text-indigo-600 text-sm border border-indigo-100">
+                      홍
+                    </div>
+                    <div>
+                      <p className="text-[9px] text-zinc-400 font-semibold uppercase tracking-widest mb-0.5">사업자 정보</p>
+                      <p className="text-sm font-bold text-zinc-900">홍길동 전기</p>
+                      <p className="text-xs text-zinc-400">홍길동 대표</p>
+                    </div>
+                  </div>
+                  <div className="mx-4 mb-3 border border-zinc-100 rounded-2xl divide-y divide-zinc-50 overflow-hidden">
+                    {[
+                      { label: "사업자번호", value: "123-45-67890" },
+                      { label: "계좌번호", value: "국민 123-456-789" },
+                      { label: "전화번호", value: "02-1234-5678" },
+                    ].map((row) => (
+                      <div key={row.label} className="flex items-center justify-between px-4 py-3">
+                        <span className="text-[10px] text-zinc-400 w-16 shrink-0">{row.label}</span>
+                        <span className="text-xs font-semibold text-zinc-700">{row.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mx-4 mb-4">
+                    <div className="bg-zinc-900 rounded-xl py-3 text-center">
+                      <span className="text-xs font-bold text-white">전체 서류 다운로드</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -74,22 +79,20 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* How it works */}
-        <section className="bg-slate-950">
+        {/* Steps */}
+        <section className="bg-zinc-950">
           <div className="max-w-5xl mx-auto px-6 py-20">
-            <p className="text-xs font-semibold text-slate-600 uppercase tracking-widest text-center mb-12">사용 방법</p>
+            <p className="text-xs font-semibold text-zinc-500 uppercase tracking-widest text-center mb-12">3단계로 끝나는 설정</p>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {[
-                { step: "1", title: "정보 등록", desc: "사업자 정보와 서류를 한 번만 업로드" },
-                { step: "2", title: "링크 생성", desc: "고유 URL이 자동으로 생성됨" },
-                { step: "3", title: "공유하기", desc: "링크 하나로 거래처에 바로 전달" },
+                { step: "01", title: "정보 등록", desc: "사업자 정보와 서류를 한 번만 등록합니다." },
+                { step: "02", title: "링크 생성", desc: "고유 URL이 자동으로 만들어집니다." },
+                { step: "03", title: "공유하기", desc: "링크 하나로 거래처에 즉시 전달합니다." },
               ].map((item) => (
-                <div key={item.step} className="bg-slate-900 rounded-2xl p-6 border border-slate-800">
-                  <div className="w-7 h-7 rounded-lg bg-slate-800 flex items-center justify-center mb-4">
-                    <span className="text-xs font-bold text-slate-500">{item.step}</span>
-                  </div>
-                  <h3 className="font-bold text-white mb-1.5">{item.title}</h3>
-                  <p className="text-sm text-slate-500 leading-relaxed">{item.desc}</p>
+                <div key={item.step} className="border border-white/5 rounded-2xl p-7">
+                  <p className="text-xs font-bold text-zinc-600 mb-5 tracking-widest">{item.step}</p>
+                  <h3 className="text-base font-bold text-white mb-2">{item.title}</h3>
+                  <p className="text-sm text-zinc-500 leading-relaxed">{item.desc}</p>
                 </div>
               ))}
             </div>
@@ -97,38 +100,77 @@ export default function LandingPage() {
         </section>
 
         {/* Features */}
-        <section className="max-w-5xl mx-auto px-6 py-20">
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest text-center mb-12">주요 기능</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {[
-              { title: "링크 하나로 공유", desc: "saupja.biz/u/홍길동전기 형태의 고유 URL로 누구에게든 바로 전달", emoji: "🔗" },
-              { title: "파일 한 곳에", desc: "사업자 등록증, 통장 사본 등 서류를 한 번만 올려두면 끝", emoji: "📂" },
-              { title: "원클릭 복사", desc: "사업자번호, 계좌번호를 버튼 한 번으로 클립보드에 복사", emoji: "⚡" },
-              { title: "항상 최신 상태", desc: "파일을 교체해도 링크는 그대로 — 상대방은 항상 최신 서류 확인", emoji: "✅" },
-            ].map((item) => (
-              <div key={item.title} className="border border-slate-100 hover:border-slate-200 rounded-2xl p-6 transition-all hover:shadow-sm">
-                <span className="text-2xl mb-4 block">{item.emoji}</span>
-                <h3 className="font-bold text-slate-900 mb-2">{item.title}</h3>
-                <p className="text-sm text-slate-400 leading-relaxed">{item.desc}</p>
-              </div>
-            ))}
+        <section className="bg-white border-b border-zinc-100">
+          <div className="max-w-5xl mx-auto px-6 py-20">
+            <p className="text-xs font-semibold text-zinc-400 uppercase tracking-widest text-center mb-12">주요 기능</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {[
+                {
+                  title: "링크 하나로 공유",
+                  desc: "고유 URL 하나로 어디서든 사업자 정보에 바로 접근할 수 있습니다.",
+                  icon: (
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                    </svg>
+                  ),
+                },
+                {
+                  title: "서류 한 곳에",
+                  desc: "사업자등록증, 통장사본 등 서류를 한 번만 올려두면 끝입니다.",
+                  icon: (
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 19a2 2 0 01-2-2V7a2 2 0 012-2h4l2 2h4a2 2 0 012 2v1M5 19h14a2 2 0 002-2v-5a2 2 0 00-2-2H9a2 2 0 00-2 2v5a2 2 0 01-2 2z" />
+                    </svg>
+                  ),
+                },
+                {
+                  title: "원클릭 복사",
+                  desc: "사업자번호, 계좌번호를 버튼 하나로 클립보드에 복사합니다.",
+                  icon: (
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                  ),
+                },
+                {
+                  title: "항상 최신 서류",
+                  desc: "파일을 교체해도 링크는 그대로 — 상대방은 항상 최신 서류를 받습니다.",
+                  icon: (
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                  ),
+                },
+              ].map((item) => (
+                <div key={item.title} className="border border-zinc-100 hover:border-zinc-200 rounded-2xl p-6 transition-all hover:shadow-sm group">
+                  <div className="w-8 h-8 rounded-lg bg-zinc-100 group-hover:bg-zinc-900 flex items-center justify-center text-zinc-500 group-hover:text-white mb-4 transition-all">
+                    {item.icon}
+                  </div>
+                  <h3 className="font-semibold text-zinc-900 mb-2 text-sm">{item.title}</h3>
+                  <p className="text-sm text-zinc-500 leading-relaxed">{item.desc}</p>
+                </div>
+              ))}
+            </div>
           </div>
         </section>
 
         {/* CTA */}
-        <section className="max-w-5xl mx-auto px-6 pb-20">
-          <div className="bg-slate-900 rounded-3xl px-8 py-16 text-center">
-            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-3">지금 바로 시작하세요</h2>
-            <p className="text-slate-500 text-sm mb-8">무료로 사업자 정보 페이지를 만들어보세요.</p>
-            <KakaoLoginButton className="inline-flex items-center gap-2.5 bg-[#FEE500] text-[#191919] px-8 py-3.5 rounded-xl text-sm font-bold hover:bg-[#F5DC00] transition" />
+        <section className="bg-zinc-50 border-b border-zinc-100">
+          <div className="max-w-5xl mx-auto px-6 py-20 text-center">
+            <h2 className="text-3xl font-bold text-zinc-900 tracking-tight mb-3">지금 바로 시작하세요</h2>
+            <p className="text-zinc-500 text-sm mb-8">무료로 사업자 정보 페이지를 만들어보세요.</p>
+            <KakaoLoginButton className="inline-flex items-center gap-2.5 bg-[#FEE500] text-zinc-900 px-8 py-3.5 rounded-xl text-sm font-bold hover:bg-[#F5DC00] transition shadow-sm" />
           </div>
         </section>
       </main>
 
-      <footer className="border-t border-slate-100 py-8">
-        <div className="max-w-5xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-300">
-          <span className="font-bold text-slate-400">사업자</span>
-          <span>© 2025 saupja.biz · All rights reserved.</span>
+      <footer className="bg-white border-t border-zinc-100 py-8">
+        <div className="max-w-5xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <span className="text-xs font-bold text-zinc-400">사업자도큐</span>
+          <div className="flex items-center gap-4 text-xs text-zinc-400">
+            <Link href="/login" className="hover:text-zinc-700 transition">로그인</Link>
+            <span>© 2025 saupja.biz</span>
+          </div>
         </div>
       </footer>
     </div>

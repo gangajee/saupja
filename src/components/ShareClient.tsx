@@ -59,9 +59,27 @@ const CopyLinkButton = memo(function CopyLinkButton() {
   return (
     <button
       onClick={handleCopy}
-      className="text-xs text-slate-400 hover:text-slate-700 transition flex items-center gap-1"
+      className={`flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition ${
+        copied
+          ? "bg-green-100 text-green-700"
+          : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+      }`}
     >
-      {copied ? "복사됨 ✓" : "링크 복사"}
+      {copied ? (
+        <>
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+          </svg>
+          복사됨
+        </>
+      ) : (
+        <>
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+          </svg>
+          링크 복사
+        </>
+      )}
     </button>
   );
 });
@@ -74,7 +92,7 @@ const QRModal = memo(function QRModal({ url, onClose }: { url: string; onClose: 
       <div className="bg-white rounded-2xl p-6 flex flex-col items-center gap-4 shadow-xl" onClick={stopProp}>
         <p className="text-sm font-semibold text-slate-700">QR 코드로 공유</p>
         <QRCodeSVG value={url} size={200} />
-        <p className="text-xs text-slate-400 text-center max-w-[200px] break-all">{url}</p>
+        <p className="text-xs text-slate-400 text-center max-w-50 break-all">{url}</p>
         <button onClick={onClose} className="text-xs text-slate-400 hover:text-slate-700 transition">닫기</button>
       </div>
     </div>
@@ -245,10 +263,10 @@ export default function ShareClient({ business: initial }: { business: Business 
   );
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-slate-50 flex flex-col">
       {/* 브랜드 바 */}
-      <div className="border-b border-slate-100 px-5 py-3 flex items-center justify-between">
-        <span className="text-xs font-semibold text-slate-300 tracking-widest uppercase">saupja.biz</span>
+      <div className="bg-white border-b border-slate-100 px-5 py-3 flex items-center justify-between sticky top-0 z-10">
+        <span className="text-xs font-bold text-slate-400 tracking-widest uppercase">saupja.biz</span>
         <div className="flex items-center gap-2">
           <KakaoShareButton
             url={pageUrl}
@@ -258,7 +276,7 @@ export default function ShareClient({ business: initial }: { business: Business 
           />
           <button
             onClick={openQR}
-            className="text-xs text-slate-400 hover:text-slate-700 transition flex items-center gap-1"
+            className="flex items-center gap-1.5 text-xs font-semibold bg-slate-100 text-slate-600 px-3 py-1.5 rounded-lg hover:bg-slate-200 transition"
           >
             QR
           </button>
@@ -268,14 +286,14 @@ export default function ShareClient({ business: initial }: { business: Business 
 
       {showQR && pageUrl && <QRModal url={pageUrl} onClose={closeQR} />}
 
-      <main className="flex-1 max-w-lg mx-auto w-full px-5 py-10 pb-20 space-y-4">
+      <main className="flex-1 max-w-lg mx-auto w-full px-4 py-8 pb-20 space-y-3">
 
         {/* 회사 헤더 */}
-        <div className="pb-2 flex items-center gap-4">
+        <div className="bg-white rounded-2xl border border-slate-100 px-5 py-6 flex items-center gap-4">
           <BusinessAvatar name={business.companyName} image={business.profileImage} size="lg" />
-          <div>
-            <p className="text-xs font-semibold text-slate-300 uppercase tracking-widest mb-1">사업자 정보</p>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">{business.companyName}</h1>
+          <div className="min-w-0">
+            <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">사업자 정보</p>
+            <h1 className="text-xl font-bold text-slate-900 tracking-tight truncate">{business.companyName}</h1>
             <p className="text-sm text-slate-400 mt-0.5">
               {isVisible("ownerName") ? `${business.ownerName} 대표` : <span className="text-slate-200 select-none">{MASKED} 대표</span>}
             </p>
@@ -284,9 +302,9 @@ export default function ShareClient({ business: initial }: { business: Business 
 
         {/* 비공개 잠금 해제 배너 */}
         {hasHidden && hasPassword && !unlocked && (
-          <div className="border border-slate-200 rounded-2xl p-4">
+          <div className="bg-white border border-slate-100 rounded-2xl p-4">
             {!showInput ? (
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-3">
                 <div>
                   <p className="text-sm font-semibold text-slate-700">일부 정보가 비공개입니다</p>
                   <p className="text-xs text-slate-400 mt-0.5">비밀번호를 입력하면 전체 정보를 볼 수 있습니다.</p>
@@ -326,8 +344,8 @@ export default function ShareClient({ business: initial }: { business: Business 
         )}
 
         {unlocked && (
-          <div className="flex items-center gap-2 text-xs text-green-600 bg-green-50 border border-green-100 rounded-2xl px-4 py-3">
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="flex items-center gap-2 text-xs text-green-700 bg-green-50 border border-green-100 rounded-2xl px-4 py-3 font-medium">
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
             </svg>
             전체 정보가 공개되었습니다.
@@ -335,7 +353,7 @@ export default function ShareClient({ business: initial }: { business: Business 
         )}
 
         {/* 핵심 정보 */}
-        <div className="border border-slate-100 rounded-2xl divide-y divide-slate-50 overflow-hidden">
+        <div className="bg-white border border-slate-100 rounded-2xl divide-y divide-slate-50 overflow-hidden">
           <InfoRow label="사업자번호" value={formatBusinessNumber(business.businessNumber)} copyValue={business.businessNumber} visible />
           {business.phone && <InfoRow label="전화번호" value={business.phone} visible={isVisible("phone")} />}
           {business.address && <InfoRow label="주소" value={business.address.replace(/^\(\d{5}\) /, "").replace(" | ", " ")} visible={isVisible("address")} />}
@@ -349,29 +367,16 @@ export default function ShareClient({ business: initial }: { business: Business 
           )}
         </div>
 
-        {/* 전체 다운로드 */}
-        {business.files.length > 0 && isVisible("files") && (
-          <a
-            href={`/api/download-all?slug=${business.slug}`}
-            className="flex items-center justify-center gap-2 w-full bg-slate-900 text-white py-4 rounded-2xl text-sm font-semibold hover:bg-slate-700 transition"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-            전체 서류 다운로드 ({business.files.length}개)
-          </a>
-        )}
-
         {/* 파일이 비공개일 때 */}
         {business.files.length > 0 && !isVisible("files") && (
-          <div className="border border-slate-100 rounded-2xl p-5 text-center">
+          <div className="bg-white border border-slate-100 rounded-2xl p-5 text-center">
             <p className="text-sm text-slate-300 select-none">첨부 서류는 비공개입니다.</p>
           </div>
         )}
 
         {/* 이미지 파일 */}
         {imageFiles.length > 0 && isVisible("files") && (
-          <div className="border border-slate-100 rounded-2xl overflow-hidden">
+          <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden">
             <div className="px-5 py-4 border-b border-slate-50">
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">첨부 이미지</p>
             </div>
@@ -392,25 +397,25 @@ export default function ShareClient({ business: initial }: { business: Business 
 
         {/* PDF 및 기타 파일 */}
         {otherFiles.length > 0 && isVisible("files") && (
-          <div className="border border-slate-100 rounded-2xl overflow-hidden">
+          <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden">
             <div className="px-5 py-4 border-b border-slate-50">
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">첨부 서류</p>
             </div>
             <div className="divide-y divide-slate-50">
               {otherFiles.map((file) => (
-                <div key={file.id} className="flex items-center justify-between px-5 py-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-xs font-bold text-slate-400 uppercase">
+                <div key={file.id} className="flex items-center justify-between px-5 py-4 gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 bg-slate-100 rounded-xl flex items-center justify-center text-xs font-bold text-slate-400 uppercase shrink-0">
                       {file.fileName.split(".").pop()}
                     </div>
-                    <div>
-                      <p className="text-sm font-semibold text-slate-800">{file.label}</p>
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-slate-800 truncate">{file.label}</p>
                       <p className="text-xs text-slate-300 mt-0.5">{formatFileSize(file.fileSize)}</p>
                     </div>
                   </div>
                   <a
                     href={`/api/download?url=${encodeURIComponent(file.url)}&name=${encodeURIComponent(file.fileName)}`}
-                    className="text-xs font-semibold text-blue-500 hover:text-blue-700 transition shrink-0"
+                    className="shrink-0 text-xs font-semibold bg-slate-900 text-white px-3 py-1.5 rounded-lg hover:bg-slate-700 transition"
                   >
                     다운로드
                   </a>
@@ -419,11 +424,24 @@ export default function ShareClient({ business: initial }: { business: Business 
             </div>
           </div>
         )}
+
+        {/* 전체 다운로드 */}
+        {business.files.length > 0 && isVisible("files") && (
+          <a
+            href={`/api/download-all?slug=${business.slug}`}
+            className="flex items-center justify-center gap-2 w-full bg-slate-900 text-white py-4 rounded-2xl text-sm font-semibold hover:bg-slate-700 transition active:bg-slate-800"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            전체 서류 다운로드 ({business.files.length}개)
+          </a>
+        )}
       </main>
 
-      <footer className="border-t border-slate-100 py-6 text-center">
+      <footer className="bg-white border-t border-slate-100 py-5 text-center">
         <p className="text-xs text-slate-300">
-          <a href="/" className="hover:text-slate-500 transition font-medium">saupja.biz</a>으로 만든 사업자 정보 페이지
+          <a href="/" className="hover:text-slate-500 transition font-semibold">saupja.biz</a>으로 만든 사업자 정보 페이지
         </p>
       </footer>
     </div>

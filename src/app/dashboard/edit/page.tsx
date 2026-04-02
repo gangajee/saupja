@@ -397,8 +397,12 @@ function EditForm() {
     setLoading(false);
 
     if (!res.ok) {
-      const data = await res.json();
-      setError(data.error ?? "저장에 실패했습니다.");
+      try {
+        const data = await res.json();
+        setError(data.error ?? "저장에 실패했습니다.");
+      } catch {
+        setError("저장에 실패했습니다.");
+      }
       return;
     }
 

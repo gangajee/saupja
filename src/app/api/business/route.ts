@@ -41,22 +41,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "이미 등록된 사업자번호입니다." }, { status: 409 });
   }
 
-  const business = await prisma.business.create({
-    data: {
-      slug,
-      userId,
-      companyName,
-      ownerName,
-      businessNumber,
-      address,
-      phone,
-      bankName,
-      accountNumber,
-      website: website || null,
-      visibleFields: visibleFields ? JSON.stringify(visibleFields) : JSON.stringify(["ownerName", "phone", "address", "account", "files"]),
-      sharePassword: sharePassword || null,
-    },
-  });
-
-  return NextResponse.json(business, { status: 201 });
+  try {
+    const business = await prisma.business.create({
+      data: {
+        slug,
+        userId,
+        companyName,
+        ownerName,
+        businessNumber,
+        address,
+        phone,
+        bankName,
+        accountNumber,
+        website: website || null,
+        visibleFields: visibleFields ? JSON.stringify(visibleFields) : JSON.stringify(["ownerName", "phone", "address", "account", "files"]),
+        sharePassword: sharePassword || null,
+      },
+    });
+    return NextResponse.json(business, { status: 201 });
+  } catch (err) {
+    console.error("[POST /api/business]", err);
+    return NextResponse.json({ error: "저장에 실패했습니다." }, { status: 500 });
+  }
 }

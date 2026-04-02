@@ -83,9 +83,13 @@ const QRModal = memo(function QRModal({ url, onClose }: { url: string; onClose: 
 
 const KakaoShareButton = memo(function KakaoShareButton({
   url,
+  title,
+  description,
   slug,
 }: {
   url: string;
+  title: string;
+  description: string;
   slug: string;
 }) {
   const [ready, setReady] = useState(false);
@@ -113,11 +117,23 @@ const KakaoShareButton = memo(function KakaoShareButton({
 
   const handleShare = useCallback(() => {
     if (!url) return;
-    const kakao = (window as unknown as { Kakao: { Share: { sendScrap: (opts: object) => void } } }).Kakao;
-    kakao.Share.sendScrap({
-      requestUrl: `https://saupja.biz/u/${slug}`,
+    const kakao = (window as unknown as { Kakao: { Share: { sendDefault: (opts: object) => void } } }).Kakao;
+    kakao.Share.sendDefault({
+      objectType: "feed",
+      content: {
+        title,
+        description,
+        imageUrl: `https://saupja.biz/api/og/${slug}?v=2`,
+        link: { mobileWebUrl: `https://saupja.biz/u/${slug}`, webUrl: `https://saupja.biz/u/${slug}` },
+      },
+      buttons: [
+        {
+          title: "사업자 정보 확인하기",
+          link: { mobileWebUrl: `https://saupja.biz/u/${slug}`, webUrl: `https://saupja.biz/u/${slug}` },
+        },
+      ],
     });
-  }, [url, slug]);
+  }, [url, title, description, slug]);
 
   if (!ready || !url) return null;
 
@@ -240,6 +256,8 @@ export default function ShareClient({ business: initial }: { business: Business 
         <div className="flex items-center gap-2">
           <KakaoShareButton
             url={pageUrl}
+            title={`${business.companyName} — 사업자 정보`}
+            description={`${business.ownerName} 대표 · 사업자 정보 공유`}
             slug={business.slug}
           />
           <button

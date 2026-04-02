@@ -218,7 +218,16 @@ function EditForm() {
       .then((r) => r.json())
       .then((found) => {
         if (!found || found.error) return;
-        setForm(found);
+        setForm({
+          companyName: found.companyName ?? "",
+          ownerName: found.ownerName ?? "",
+          businessNumber: found.businessNumber ?? "",
+          address: found.address ?? "",
+          phone: found.phone ?? "",
+          bankName: found.bankName ?? "",
+          accountNumber: found.accountNumber ?? "",
+          website: found.website ?? "",
+        });
         setFiles(found.files ?? []);
         const parsed = splitAddress(found.address ?? "");
         setPostcode(parsed.postcode);

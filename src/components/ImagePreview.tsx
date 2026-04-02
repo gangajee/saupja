@@ -8,9 +8,10 @@ type Props = {
   fileName: string;
   downloadUrl?: string;
   label?: string;
+  typeLabel?: string;
 };
 
-const ImagePreview = memo(function ImagePreview({ src, alt, fileName, downloadUrl, label }: Props) {
+const ImagePreview = memo(function ImagePreview({ src, alt, fileName, downloadUrl, label, typeLabel }: Props) {
   const [enlarged, setEnlarged] = useState(false);
 
   const open = useCallback(() => setEnlarged(true), []);
@@ -19,12 +20,17 @@ const ImagePreview = memo(function ImagePreview({ src, alt, fileName, downloadUr
 
   return (
     <>
-      <div
-        className="aspect-square bg-slate-100 rounded-lg overflow-hidden cursor-zoom-in relative"
-        onClick={open}
-      >
-        <img src={src} alt={alt} className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition" />
+      <div className="flex flex-col gap-1">
+        <div
+          className="aspect-square bg-slate-100 rounded-lg overflow-hidden cursor-zoom-in relative"
+          onClick={open}
+        >
+          <img src={src} alt={alt} className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition" />
+        </div>
+        {typeLabel && (
+          <p className="text-[10px] text-slate-400 text-center truncate">{typeLabel}</p>
+        )}
       </div>
 
       {enlarged && (

@@ -16,8 +16,15 @@ const QRCodeSVG = dynamic(
   }
 );
 
+const FILE_TYPE_LABELS: Record<string, string> = {
+  registration: "사업자 등록증",
+  bankbook: "통장 사본",
+  other: "기타 서류",
+};
+
 type BusinessFile = {
   id: string;
+  type: string;
   label: string;
   url: string;
   fileName: string;
@@ -389,6 +396,7 @@ export default function ShareClient({ business: initial }: { business: Business 
                   fileName={file.fileName}
                   downloadUrl={`/api/download?url=${encodeURIComponent(file.url)}&name=${encodeURIComponent(file.fileName)}`}
                   label={file.label}
+                  typeLabel={FILE_TYPE_LABELS[file.type] ?? "기타 서류"}
                 />
               ))}
             </div>
@@ -410,7 +418,9 @@ export default function ShareClient({ business: initial }: { business: Business 
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-slate-800 truncate">{file.label}</p>
-                      <p className="text-xs text-slate-300 mt-0.5">{formatFileSize(file.fileSize)}</p>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        {FILE_TYPE_LABELS[file.type] ?? "기타 서류"} · {formatFileSize(file.fileSize)}
+                      </p>
                     </div>
                   </div>
                   <a

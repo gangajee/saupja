@@ -19,7 +19,7 @@ export default function DeleteBusinessButton({ id }: { id: string }) {
   return (
     <button
       onClick={handleDelete}
-      className="flex-1 text-center py-3 text-red-400 hover:bg-red-50 transition active:bg-red-50"
+      className="flex-1 text-center py-3 text-red-400 hover:bg-red-500/10 transition text-xs"
     >
       삭제
     </button>

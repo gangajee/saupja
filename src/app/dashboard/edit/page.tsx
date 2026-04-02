@@ -81,9 +81,9 @@ const VisibilitySection = memo(function VisibilitySection({
   );
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 p-5 space-y-4">
-      <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">공개 설정</p>
-      <p className="text-xs text-slate-400">체크된 항목은 누구나 볼 수 있고, 체크 해제된 항목은 비밀번호 입력 후 열람 가능합니다.</p>
+    <div className="bg-white/3 border border-white/8 rounded-2xl p-5 space-y-4">
+      <p className="text-xs font-semibold text-zinc-500 uppercase tracking-widest">공개 설정</p>
+      <p className="text-xs text-zinc-600">체크된 항목은 누구나 볼 수 있고, 체크 해제된 항목은 비밀번호 입력 후 열람 가능합니다.</p>
       <div className="space-y-3">
         {ALL_FIELDS.map((field) => (
           <label key={field} className="flex items-center gap-3 cursor-pointer">
@@ -91,28 +91,28 @@ const VisibilitySection = memo(function VisibilitySection({
               type="checkbox"
               checked={visibleFields.includes(field)}
               onChange={() => onToggleField(field)}
-              className="w-4 h-4 rounded border-slate-300 accent-slate-900"
+              className="w-4 h-4 rounded border-white/20 accent-white"
             />
-            <span className="text-sm font-medium text-slate-700">{FIELD_LABELS[field]}</span>
+            <span className="text-sm font-medium text-zinc-300">{FIELD_LABELS[field]}</span>
             {!visibleFields.includes(field) && (
-              <span className="text-xs text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full">비공개</span>
+              <span className="text-xs text-zinc-600 bg-white/5 border border-white/10 px-2 py-0.5 rounded-full">비공개</span>
             )}
           </label>
         ))}
       </div>
 
       <div>
-        <label className="block text-xs font-medium text-slate-500 mb-1.5 uppercase tracking-wide">
+        <label className="block text-xs font-medium text-zinc-500 mb-1.5 uppercase tracking-wide">
           비공개 열람 비밀번호
         </label>
         <input
           type="text"
           value={sharePassword}
           onChange={handlePasswordChange}
-          className="w-full border border-slate-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900"
+          className="w-full border border-white/10 bg-zinc-900 text-white rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-white/20 placeholder:text-zinc-700"
           placeholder="비공개 항목 열람 시 사용할 비밀번호"
         />
-        <p className="text-xs text-slate-300 mt-1">비어있으면 비공개 항목을 열람할 수 없습니다.</p>
+        <p className="text-xs text-zinc-700 mt-1">비어있으면 비공개 항목을 열람할 수 없습니다.</p>
       </div>
     </div>
   );
@@ -156,22 +156,22 @@ const ProfileImageSection = memo(function ProfileImageSection({
   }, [savedId]);
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 p-5 space-y-3">
-      <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">대표 이미지</p>
-      <p className="text-xs text-slate-400">링크 공유 시 미리보기 카드에 표시됩니다.</p>
+    <div className="bg-white/3 border border-white/8 rounded-2xl p-5 space-y-3">
+      <p className="text-xs font-semibold text-zinc-500 uppercase tracking-widest">대표 이미지</p>
+      <p className="text-xs text-zinc-600">링크 공유 시 미리보기 카드에 표시됩니다.</p>
       <div className="flex items-center gap-4">
         {profileImage ? (
-          <img src={profileImage} alt="대표 이미지" className="w-20 h-20 rounded-xl object-cover border border-slate-100" />
+          <img src={profileImage} alt="대표 이미지" className="w-20 h-20 rounded-xl object-cover border border-white/10" />
         ) : (
           <BusinessAvatar name={companyName || "?"} size="lg" />
         )}
         <div className="flex flex-col gap-2">
-          <label className={`cursor-pointer px-4 py-2 rounded-xl text-sm font-medium border border-slate-200 text-slate-600 hover:bg-slate-50 transition ${uploading ? "opacity-50 pointer-events-none" : ""}`}>
+          <label className={`cursor-pointer px-4 py-2 rounded-xl text-sm font-medium border border-white/10 text-zinc-400 hover:bg-white/8 hover:text-zinc-200 transition ${uploading ? "opacity-50 pointer-events-none" : ""}`}>
             {uploading ? "업로드 중..." : profileImage ? "이미지 변경" : "이미지 업로드"}
             <input type="file" accept="image/*" className="hidden" onChange={handleUpload} />
           </label>
           {profileImage && (
-            <button type="button" onClick={handleDelete} className="text-xs text-red-400 hover:text-red-600 text-left">
+            <button type="button" onClick={handleDelete} className="text-xs text-red-400 hover:text-red-300 text-left transition">
               이미지 삭제
             </button>
           )}
@@ -414,26 +414,29 @@ function EditForm() {
     }
   }, []);
 
+  const inputCls = "w-full border border-white/10 bg-zinc-900 text-white rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-white/20 placeholder:text-zinc-700";
+  const labelCls = "block text-xs font-medium text-zinc-500 mb-1.5 uppercase tracking-wide";
+
   return (
-    <div className="min-h-screen bg-slate-50">
-      <header className="bg-white border-b border-slate-100 sticky top-0 z-10">
+    <div className="min-h-screen bg-zinc-950 text-white">
+      <header className="border-b border-white/5 bg-zinc-950/80 backdrop-blur-xl sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-5 h-14 flex items-center gap-3">
-          <Link href="/dashboard" className="text-slate-400 p-1 -ml-1">
+          <Link href="/dashboard" className="text-zinc-600 hover:text-zinc-300 transition p-1 -ml-1">
             <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </Link>
-          <h1 className="font-semibold text-slate-900">{id ? "정보 수정" : "사업자 정보 등록"}</h1>
+          <h1 className="font-semibold text-white">{id ? "정보 수정" : "사업자 정보 등록"}</h1>
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-5 py-5 pb-12 space-y-4">
-        <form id="edit-form" onSubmit={handleSubmit} className="space-y-4">
+      <main className="max-w-2xl mx-auto px-5 py-6 pb-12 space-y-3">
+        <form id="edit-form" onSubmit={handleSubmit} className="space-y-3">
           {/* 사업자등록증 OCR */}
-          <div className="bg-blue-50 border border-blue-100 rounded-2xl p-5">
-            <p className="text-xs font-semibold text-blue-400 uppercase tracking-widest mb-1">자동 입력</p>
-            <p className="text-xs text-blue-400 mb-3">사업자등록증을 업로드하면 정보가 자동으로 채워집니다.</p>
-            <label className={`flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold border-2 border-dashed border-blue-200 text-blue-500 hover:bg-blue-100 transition cursor-pointer ${ocrLoading ? "opacity-50 pointer-events-none" : ""}`}>
+          <div className="border border-indigo-500/20 bg-indigo-500/5 rounded-2xl p-5">
+            <p className="text-xs font-semibold text-indigo-400 uppercase tracking-widest mb-1">자동 입력</p>
+            <p className="text-xs text-indigo-400/70 mb-3">사업자등록증을 업로드하면 정보가 자동으로 채워집니다.</p>
+            <label className={`flex items-center justify-center gap-2 w-full py-3 rounded-xl text-sm font-semibold border border-dashed border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10 transition cursor-pointer ${ocrLoading ? "opacity-50 pointer-events-none" : ""}`}>
               {ocrLoading ? (
                 <>
                   <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
@@ -455,8 +458,8 @@ function EditForm() {
           </div>
 
           {/* 기본 정보 */}
-          <div className="bg-white rounded-2xl border border-slate-100 p-5 space-y-4">
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">기본 정보</p>
+          <div className="bg-white/3 border border-white/8 rounded-2xl p-5 space-y-4">
+            <p className="text-xs font-semibold text-zinc-500 uppercase tracking-widest">기본 정보</p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {[
@@ -465,17 +468,8 @@ function EditForm() {
                 { name: "phone", label: "전화번호", placeholder: "02-0000-0000" },
               ].map(({ name, label, placeholder, required }) => (
                 <div key={name}>
-                  <label className="block text-xs font-medium text-slate-500 mb-1.5 uppercase tracking-wide">
-                    {label} {required && <span className="text-red-400">*</span>}
-                  </label>
-                  <input
-                    name={name}
-                    value={form[name as keyof FormData]}
-                    onChange={onChange}
-                    required={required}
-                    className="w-full border border-slate-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent"
-                    placeholder={placeholder}
-                  />
+                  <label className={labelCls}>{label} {required && <span className="text-red-400">*</span>}</label>
+                  <input name={name} value={form[name as keyof FormData]} onChange={onChange} required={required} className={inputCls} placeholder={placeholder} />
                 </div>
               ))}
 
@@ -483,41 +477,24 @@ function EditForm() {
               <div className="sm:col-span-2 space-y-3">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-slate-500 mb-1.5 uppercase tracking-wide">
-                      사업자번호 <span className="text-red-400">*</span>
-                    </label>
-                    <input
-                      name="businessNumber"
-                      value={form.businessNumber}
-                      onChange={(e) => { onChange(e); setVerifyResult(null); }}
-                      required
-                      className="w-full border border-slate-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent"
-                      placeholder="000-00-00000"
-                    />
+                    <label className={labelCls}>사업자번호 <span className="text-red-400">*</span></label>
+                    <input name="businessNumber" value={form.businessNumber} onChange={(e) => { onChange(e); setVerifyResult(null); }} required className={inputCls} placeholder="000-00-00000" />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-slate-500 mb-1.5 uppercase tracking-wide">
-                      개업일 <span className="text-red-400">*</span>
-                    </label>
-                    <input
-                      type="date"
-                      value={startDate}
-                      onChange={(e) => { setStartDate(e.target.value); setVerifyResult(null); }}
-                      required
-                      className="w-full border border-slate-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 focus:border-transparent"
-                    />
+                    <label className={labelCls}>개업일 <span className="text-red-400">*</span></label>
+                    <input type="date" value={startDate} onChange={(e) => { setStartDate(e.target.value); setVerifyResult(null); }} required className={inputCls + " scheme-dark"} />
                   </div>
                 </div>
                 <button
                   type="button"
                   onClick={handleVerify}
                   disabled={verifying || !form.businessNumber || !form.ownerName || !startDate}
-                  className="w-full py-3 rounded-xl text-xs font-semibold bg-slate-100 text-slate-600 hover:bg-slate-200 disabled:opacity-50 transition"
+                  className="w-full py-3 rounded-xl text-xs font-semibold bg-white/8 text-zinc-300 hover:bg-white/12 disabled:opacity-40 transition border border-white/8"
                 >
                   {verifying ? "인증 중..." : verifyResult?.verified ? "✓ 인증 완료" : "사업자 인증"}
                 </button>
                 {verifyResult && (
-                  <p className={`text-xs flex items-center gap-1 ${verifyResult.verified ? "text-green-600" : "text-red-500"}`}>
+                  <p className={`text-xs flex items-center gap-1 ${verifyResult.verified ? "text-emerald-400" : "text-red-400"}`}>
                     {verifyResult.verified ? "✓" : "✗"} {verifyResult.message}
                   </p>
                 )}
@@ -525,28 +502,28 @@ function EditForm() {
 
               {/* 주소 */}
               <div className="sm:col-span-2 space-y-2">
-                <label className="block text-xs font-medium text-slate-500 uppercase tracking-wide">사업장 주소</label>
+                <label className={labelCls}>사업장 주소</label>
                 <div className="flex gap-2">
-                  <input value={postcode} readOnly className="w-24 border border-slate-200 rounded-xl px-3 py-3 text-sm bg-slate-50 text-slate-400" placeholder="우편번호" />
+                  <input value={postcode} readOnly className="w-24 border border-white/8 rounded-xl px-3 py-3 text-sm bg-zinc-800 text-zinc-600" placeholder="우편번호" />
                   <PostcodeSearch onSelect={handlePostcodeSelect} />
                 </div>
-                <input value={baseAddress} readOnly className="w-full border border-slate-200 rounded-xl px-3 py-3 text-sm bg-slate-50 text-slate-400" placeholder="기본 주소 (주소 검색 후 자동 입력)" />
-                <input value={detailAddress} onChange={handleDetailChange} className="w-full border border-slate-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" placeholder="상세 주소 (동/호수 등)" />
+                <input value={baseAddress} readOnly className="w-full border border-white/8 rounded-xl px-3 py-3 text-sm bg-zinc-800 text-zinc-600" placeholder="기본 주소 (주소 검색 후 자동 입력)" />
+                <input value={detailAddress} onChange={handleDetailChange} className={inputCls} placeholder="상세 주소 (동/호수 등)" />
               </div>
 
               {/* 계좌 */}
               <div>
-                <label className="block text-xs font-medium text-slate-500 mb-1.5 uppercase tracking-wide">은행명</label>
-                <input name="bankName" value={form.bankName} onChange={onChange} className="w-full border border-slate-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" placeholder="국민은행" />
+                <label className={labelCls}>은행명</label>
+                <input name="bankName" value={form.bankName} onChange={onChange} className={inputCls} placeholder="국민은행" />
               </div>
               <div>
-                <label className="block text-xs font-medium text-slate-500 mb-1.5 uppercase tracking-wide">계좌번호</label>
-                <input name="accountNumber" value={form.accountNumber} onChange={onChange} className="w-full border border-slate-200 rounded-xl px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900" placeholder="000-0000-0000-00" />
+                <label className={labelCls}>계좌번호</label>
+                <input name="accountNumber" value={form.accountNumber} onChange={onChange} className={inputCls} placeholder="000-0000-0000-00" />
               </div>
             </div>
           </div>
 
-          {/* 공개 설정 — memoized, skips re-render on form keystrokes */}
+          {/* 공개 설정 */}
           <VisibilitySection
             visibleFields={visibleFields}
             sharePassword={sharePassword}
@@ -564,24 +541,23 @@ function EditForm() {
             initialImage={initialProfileImage}
           />
         ) : (
-          <div className="bg-white rounded-2xl border border-slate-100 p-5 opacity-40 pointer-events-none">
-            <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1">대표 이미지</p>
-            <p className="text-xs text-slate-400">저장 후 이미지 업로드 가능합니다.</p>
+          <div className="bg-white/3 border border-white/8 rounded-2xl p-5 opacity-30 pointer-events-none">
+            <p className="text-xs font-semibold text-zinc-500 uppercase tracking-widest mb-1">대표 이미지</p>
+            <p className="text-xs text-zinc-600">저장 후 이미지 업로드 가능합니다.</p>
           </div>
         )}
 
         {/* 파일 업로드 */}
-        <div className="bg-white rounded-2xl border border-slate-100 p-5 space-y-4">
-          <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">첨부 서류</p>
+        <div className="bg-white/3 border border-white/8 rounded-2xl p-5 space-y-4">
+          <p className="text-xs font-semibold text-zinc-500 uppercase tracking-widest">첨부 서류</p>
 
-          {/* 저장된 파일 목록 */}
           {files.length > 0 && (
             <div className="space-y-2">
               {files.map((file) => (
-                <div key={file.id} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl gap-2">
+                <div key={file.id} className="flex items-center justify-between p-3 bg-white/5 border border-white/5 rounded-xl gap-2">
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-slate-700 truncate">{file.label}</p>
-                    <p className="text-xs text-slate-400 truncate">{file.fileName} · {formatFileSize(file.fileSize)}</p>
+                    <p className="text-sm font-medium text-zinc-300 truncate">{file.label}</p>
+                    <p className="text-xs text-zinc-600 truncate">{file.fileName} · {formatFileSize(file.fileSize)}</p>
                   </div>
                   {savedId && (
                     <button
@@ -591,7 +567,7 @@ function EditForm() {
                         const res = await fetch(`/api/business/${savedId}/files/${file.id}`, { method: "DELETE" });
                         if (res.ok) setFiles((prev) => prev.filter((f) => f.id !== file.id));
                       }}
-                      className="text-red-400 text-sm shrink-0 px-2"
+                      className="text-red-400 text-xs shrink-0 px-2 hover:text-red-300 transition"
                     >삭제</button>
                   )}
                 </div>
@@ -599,47 +575,38 @@ function EditForm() {
             </div>
           )}
 
-          {/* 대기 중인 파일 (저장 시 함께 업로드됨) */}
           {pendingFiles.length > 0 && (
             <div className="space-y-2">
-              <p className="text-xs text-blue-500 font-medium">저장 시 자동 업로드 ({pendingFiles.length}개)</p>
+              <p className="text-xs text-indigo-400 font-medium">저장 시 자동 업로드 ({pendingFiles.length}개)</p>
               {pendingFiles.map((pf, i) => (
-                <div key={i} className="flex items-center justify-between p-3 bg-blue-50 border border-blue-100 rounded-xl gap-2">
+                <div key={i} className="flex items-center justify-between p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-xl gap-2">
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-medium text-slate-700 truncate">{pf.label}</p>
-                    <p className="text-xs text-slate-400 truncate">{pf.file.name} · {formatFileSize(pf.file.size)}</p>
+                    <p className="text-sm font-medium text-zinc-300 truncate">{pf.label}</p>
+                    <p className="text-xs text-zinc-600 truncate">{pf.file.name} · {formatFileSize(pf.file.size)}</p>
                   </div>
-                  <button type="button" onClick={() => removePendingFile(i)} className="text-red-400 text-sm shrink-0 px-2">삭제</button>
+                  <button type="button" onClick={() => removePendingFile(i)} className="text-red-400 text-xs shrink-0 px-2">삭제</button>
                 </div>
               ))}
             </div>
           )}
 
-          {/* 파일 추가 */}
           <div className="space-y-2">
-            <div className="flex gap-2">
-              <select
-                value={pendingFileType}
-                onChange={handlePendingTypeChange}
-                className="flex-1 border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900 bg-white"
-              >
-                {FILE_TYPES.map((t) => (
-                  <option key={t.value} value={t.value}>{t.label}</option>
-                ))}
-              </select>
-            </div>
+            <select
+              value={pendingFileType}
+              onChange={handlePendingTypeChange}
+              className="w-full border border-white/10 bg-zinc-900 text-zinc-300 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-white/20"
+            >
+              {FILE_TYPES.map((t) => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
+            </select>
             {pendingFileType === "other" && (
-              <input
-                value={pendingFileLabel}
-                onChange={handlePendingLabelChange}
-                placeholder="서류 이름 입력"
-                className="w-full border border-slate-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-slate-900"
-              />
+              <input value={pendingFileLabel} onChange={handlePendingLabelChange} placeholder="서류 이름 입력" className={inputCls} />
             )}
             <input ref={pendingFileInputRef} type="file" accept=".pdf,.jpg,.jpeg,.png,image/*" className="hidden" id="pending-file-input" onChange={handleAddPendingFile} />
             <label
               htmlFor="pending-file-input"
-              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-dashed border-slate-300 text-slate-500 text-sm font-medium cursor-pointer hover:bg-slate-50 transition"
+              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-dashed border-white/10 text-zinc-500 text-sm font-medium cursor-pointer hover:bg-white/5 hover:text-zinc-300 transition"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
@@ -649,18 +616,18 @@ function EditForm() {
           </div>
         </div>
 
-        {/* 에러 + 저장 버튼 — 항상 맨 아래 */}
-        {error && <p className="text-red-500 text-sm px-1">{error}</p>}
+        {/* 에러 + 저장 버튼 */}
+        {error && <p className="text-red-400 text-sm px-1">{error}</p>}
         <div className="flex gap-2 pb-4">
           <button
             type="submit"
             form="edit-form"
             disabled={loading}
-            className="flex-1 bg-slate-900 text-white py-3 rounded-xl text-sm font-semibold hover:bg-slate-700 disabled:opacity-50 transition"
+            className="flex-1 bg-white text-zinc-900 py-3 rounded-xl text-sm font-bold hover:bg-zinc-100 disabled:opacity-40 transition"
           >
             {loading ? "저장 중..." : saved ? "저장됨 ✓" : pendingFiles.length > 0 ? `저장 (파일 ${pendingFiles.length}개 포함)` : "저장"}
           </button>
-          <Link href="/dashboard" className="flex-1 text-center bg-slate-100 text-slate-600 py-3 rounded-xl text-sm font-semibold">
+          <Link href="/dashboard" className="flex-1 text-center bg-white/8 text-zinc-400 py-3 rounded-xl text-sm font-semibold hover:bg-white/12 transition">
             {saved ? "완료" : "취소"}
           </Link>
         </div>
